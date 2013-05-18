@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" width="900" height="700" 
+		 creationComplete="init();">
+	
+	<fx:Script>
+		<![CDATA[
+			import lab.valueObject.User;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.events.FlexEvent;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.validators.Validator;
+			
+			//用户区域的列表
+			[Bindable]
+			private var m_zoneList:ArrayCollection;
+			
+			[Bidable]
+			public var m_userinfo:User = new User(); 
+			
+			private var m_bIsUserExist:Boolean = false;
+			
+			public var arrGenderList:ArrayCollection = new ArrayCollection( 
+				[ {label:"男", data:0},  
+					{label:"女", data:1}]);
+			
+			
+			/**
+			 * 界面初始化函数
+			 */
+			private function init():void
+			{
+				zoneConfig.send();
+			}
+			
+			private function register():void 
+			{
+				trace("debug");
+				var errors:Array = Validator.validateAll(validators);
+				
+				if(errors.length > 0 )
+				{
+					labelMessage.text = "输入不合法！";
+					return;
+				}
+				if(m_bIsUserExist)
+				{
+					labelMessage.text = "该用户名已经存在！";
+					return;
+				}	
+				else
+					labelMessage.text = "";
+				
+				m_userinfo.iGender = comGender.value as int;
+				m_userinfo.dateBirthday = userBirthday.selectedDate;
+				m_userinfo.iUserZoneId = comZoneList.value as int;
+				
+				var str:String = "";
+				
+				str += "m_userinfo.strAddress:" + m_userinfo.strAddress;
+				str += ",m_userinfo.strChineseName:" + m_userinfo.strChineseName;
+				str += ",m_userinfo.strIdentityId:" + m_userinfo.strIdentityId;
+				//str += m_userinfo.strLoginIp;
+				str += ",m_userinfo.strOfficePhoneNumber:" + m_userinfo.strOfficePhoneNumber;
+				str += ",m_userinfo.strPassword:" + m_userinfo.strPassword;
+				str += ",m_userinfo.strPhoneNumber:" + m_userinfo.strPhoneNumber;
+				str += ",m_userinfo.strUserEmail:" + m_userinfo.strUserEmail;
+				str += ",m_userinfo.strUsername:" + m_userinfo.strUsername;
+				str += ",m_userinfo.bGender:" + m_userinfo.iGender;
+				str += ",m_userinfo.dateBirthday:" + m_userinfo.dateBirthday;
+				str += ",m_userinfo.iUserZoneId:" + m_userinfo.iUserZoneId;
+				Alert.show(str);
+				
+				
+				trace("m_userinfo.strAddress:" + m_userinfo.strAddress);
+				trace(",m_userinfo.strChineseName:" + m_userinfo.strChineseName);
+				trace(",m_userinfo.strIdentityId:" + m_userinfo.strIdentityId);
+				//trace(m_userinfo.strLoginIp);
+				trace(",m_userinfo.strOfficePhoneNumber:" + m_userinfo.strOfficePhoneNumber);
+				trace(",m_userinfo.strPassword:" + m_userinfo.strPassword);
+				trace(",m_userinfo.strPhoneNumber:" + m_userinfo.strPhoneNumber);
+				trace(",m_userinfo.strUserEmail:" + m_userinfo.strUserEmail);
+				trace(",m_userinfo.strUsername:" + m_userinfo.strUsername);
+				RegisterRO.addAnUser(m_userinfo);
+			}
+			
+			protected function Register_resultHandler(event:ResultEvent):void
+			{
+				var bRegisterResult:Boolean = event.result as Boolean;
+				if(false == bRegisterResult)
+				{
+					Alert.show("注册失败！");
+				}
+				else
+				{
+					Alert.show("注册成功！");
+					var e:Event = new Event("go2Login");
+					this.dispatchEvent(e);
+				}
+			}
+			
+			protected function Register_faultHandler(event:FaultEvent):void
+			{
+				Alert.show("注册失败！" + event.toString(), 'Error');
+			}
+			
+			private function zoneConfigHandler(evt:ResultEvent):void{
+				m_zoneList = evt.result.zoneconfig.zone;
+//				var arrIp:Array = evt.result.zoneconfig.zone.ip;
+//				Alert.show(m_zoneList[0].ip);
+			}
+			
+			protected function btnCancel_clickHandler(event:MouseEvent):void
+			{
+				var e:Event = new Event("go2Login");
+				this.dispatchEvent(e);
+			}
+			
+			protected function txtPassword_focusOutHandler(event:FocusEvent):void
+			{
+//				if(null == m_userinfo.strPassword)
+//				{
+//					labelPass.text = "密码不能为空！";
+//					return;
+//				}
+//				else if(m_userinfo.strPassword.length < 6)
+//					labelPass.text = "密码长度至少为6";
+//				else
+//					labelPass.text = "";
+			}
+
+			protected function txtPasswordConfim_focusOutHandler(event:FocusEvent):void
+			{
+//				if(txtPassword.text != txtPasswordConfirm.text)
+//					labelPassConfirm.text = "两次输入的密码不一致！";
+//				else if(null == txtPasswordConfirm.text)
+//					labelPassConfirm.text = "密码不能为空！";
+//				else
+//					labelPassConfirm.text = "";
+			}
+
+
+			protected function txtEmail_focusOutHandler(event:FocusEvent):void
+			{
+				var errors:Array = Validator.validateAll(emailValidator);
+				if(errors.length > 0)
+				{
+					labelEmail.text = "请输入正确的email";
+					return;
+				}
+				else
+					labelEmail.text = "";
+				
+				if(null == m_userinfo || null == m_userinfo.strUserEmail || m_userinfo.strUserEmail.length==0)
+					labelEmail.text = "邮箱不能为空";
+				else
+					labelEmail.text = "";
+				
+			}
+			
+			protected function txtUsername_focusOutHandler(event:FocusEvent):void
+			{
+				if(null == m_userinfo || null == m_userinfo.strUsername || m_userinfo.strUsername.length==0)
+				{
+					labelUsername.text = "用户名不能为空";
+				}	
+				else
+					labelUsername.text = "";
+				checkIsUserExistRO.isUsernameExist(m_userinfo.strUsername);
+			}
+
+
+			protected function checkIsUserExistRO_resultHandler(event:ResultEvent):void
+			{
+				var ret:Boolean = event.result as Boolean;
+				if(true == ret)
+				{
+					m_bIsUserExist = true;
+					labelUsername.text = "该用户名已经存在！";
+				}
+				else
+					m_bIsUserExist = false;
+				trace("aaaa" + ret);
+			}
+
+
+			protected function checkIsUserExistRO_faultHandler(event:FaultEvent):void
+			{
+				trace("bbb" + event.fault.toString());
+			}
+			
+			// Event handler function to write the selected 
+			// date to the Label control.         
+			private function displayDate(date:Date):void { 
+				if (date == null) 
+					selection.text = "Date selected: "; 
+				else 
+					selection.text = "Date selected: " + date.getFullYear().toString() + 
+						'/' + (date.getMonth()+1).toString() + '/' + date.getDate(); 
+			} 
+
+
+			protected function userBirthday_initializeHandler(event:FlexEvent):void
+			{
+				// TODO Auto-generated method stub
+			}
+
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+		
+		<fx:Array id="validators">
+			<mx:StringValidator source="{txtUsername}" property="text" required="true" minLength="1" />
+			<mx:StringValidator source="{txtPassword}" property="text" required="true" minLength="6" />
+			<mx:EmailValidator id="emailVali" source="{txtEmail}" property="text" required="true" />
+		</fx:Array>
+		
+		<fx:Array id="emailValidator">
+			<mx:EmailValidator source="{txtEmail}" property="text" required="true" />
+		</fx:Array>
+		
+		<mx:RemoteObject id = "RegisterRO"
+						 destination = "UserServiceDest"
+						 result = "Register_resultHandler(event);"
+						 fault = "Register_faultHandler(event);"/>
+		<mx:RemoteObject id="checkIsUserExistRO" destination="UserServiceDest" result="checkIsUserExistRO_resultHandler(event)"
+						 fault="checkIsUserExistRO_faultHandler(event)" />
+		
+		<mx:HTTPService id="zoneConfig" url="data/ZoneConfig/ZoneConfig.xml" result="zoneConfigHandler(event)"/>
+	</fx:Declarations>
+	
+	<fx:Metadata>
+		[Event(name="go2Login", type="flash.events.Event")]
+	</fx:Metadata>	
+	
+	<!--
+	<mx:FormItem label="用户名:" required="true" direction="horizontal">
+	
+	
+	<mx:TextInput width="250" height="30" id = "txtUsername" text="@{m_userinfo.strUsername}"
+	focusOut="txtUsername_focusOutHandler(event)"/>
+	<mx:Label id="labelUsername" text="密码长度至少为6" color="red"/>
+	</mx:FormItem>
+	
+	
+	<mx:FormItem label="学校/单位:" >
+	<mx:ComboBox width="250" id="iOSType" dataProvider="{m_zoneList}" labelField="label"></mx:ComboBox>
+	</mx:FormItem>
+	<mx:FormItem label="E-mail:" height="30" direction="horizontal">
+	<mx:TextInput width="250" height="30" id = "txtEmail" text="@{m_userinfo.strUserEmail}"
+	focusOut="txtEmail_focusOutHandler(event)"/>
+	<mx:Label id="labelEmail" text="可用此邮箱找回密码." color="red"/>
+	</mx:FormItem> 
+	
+	<mx:FormItem label="提示：" >
+	<mx:Label id="labelMessage" text="" color="red"/>
+	</mx:FormItem>
+	
+	<mx:FormItem paddingLeft="30" direction="horizontal">
+	<mx:Button label="注册" id="registerButton"  click = "register()" />
+	<mx:Button label="返回" id="btnCancel"  click="btnCancel_clickHandler(event)"/>
+	</mx:FormItem>
+	-->
+	
+	<mx:Panel id="loginPanel" 
+			  title="用户注册" color="0x323232" borderAlpha="0.15"
+			  horizontalScrollPolicy="off" >
+		<mx:Form id="loginForm" color="0x323232" >
+			<mx:FormItem label="用户名:" required="true" direction="horizontal">
+
+				<mx:TextInput width="250" height="30" id = "txtUsername" text="@{m_userinfo.strUsername}"
+							  focusOut="txtUsername_focusOutHandler(event)"/>
+				<mx:Label id="labelUsername"  color="red"/>
+			</mx:FormItem>
+			
+			<mx:FormItem label="真实姓名:" required="true" direction="horizontal">
+				
+				<mx:TextInput width="250" height="30" id = "txtChineseName" text="@{m_userinfo.strChineseName}"
+							  />
+				<mx:Label id="labelChineseName"  color="red"/>
+			</mx:FormItem>
+			
+			<mx:FormItem label="请输入初始密码：" height="30" required="true" direction="horizontal">
+				<mx:TextInput width="250" id="txtPassword" text="@{m_userinfo.strPassword}" displayAsPassword="true"
+							  focusOut="txtPassword_focusOutHandler(event)" />
+				<mx:Label id="labelPass" text="密码长度至少为6" color="red"/>
+			</mx:FormItem>
+			<mx:FormItem label="请再次输入密码：" height="30" required="true" direction="horizontal">
+				<mx:TextInput width="250" id="txtPasswordConfirm" focusOut="txtPasswordConfim_focusOutHandler(event)"
+							  displayAsPassword="true"/>
+				<mx:Label id="labelPassConfirm" text="" color="red"/>
+			</mx:FormItem>
+			
+			<mx:FormItem label="身份证号：" height="30" required="true" direction="horizontal">
+				<mx:TextInput width="250" id="txtIdentityId" text="@{m_userinfo.strIdentityId}" 
+							  />
+				<mx:Label id="labelIdentityId"  color="red"/>
+			</mx:FormItem>
+			<mx:FormItem label="出生日期：" height="200" required="true" direction="horizontal">
+				<mx:DateChooser  id="userBirthday" yearNavigationEnabled="true" selectedDate="@{m_userinfo.dateBirthday}"
+								 initialize="userBirthday_initializeHandler(event)"  />  
+				<mx:Label id="selection"  color="blue" text=""/> 
+			</mx:FormItem>
+			
+			<mx:FormItem label="性别:" >
+				<mx:ComboBox width="250" id="comGender" dataProvider="{arrGenderList}" labelField="label"
+							 >
+				</mx:ComboBox>
+			</mx:FormItem>
+			<mx:FormItem label="E-mail:" height="30" direction="horizontal">
+				<mx:TextInput width="250" height="30" id = "txtEmail" text="@{m_userinfo.strUserEmail}"
+							  focusOut="txtEmail_focusOutHandler(event)"/>
+				<mx:Label id="labelEmail" text="可用此邮箱找回密码." color="red"/>
+			</mx:FormItem> 
+			
+			<mx:FormItem label="学校/单位:" >
+				<mx:ComboBox width="250" id="comZoneList" dataProvider="{m_zoneList}" labelField="label"></mx:ComboBox>
+			</mx:FormItem>
+			
+			<mx:FormItem label="手机号码：" height="30" required="true" direction="horizontal">
+				<mx:TextInput width="250" id="txtPhoneNumber"  text="@{m_userinfo.strPhoneNumber}" 
+							  />
+				<mx:Label  color="red"/>
+			</mx:FormItem>
+			
+			<mx:FormItem label="通讯地址：" height="30" required="true" direction="horizontal">
+				<mx:TextInput width="250" id="strAddress" text="@{m_userinfo.strAddress}" 
+							  />
+				<mx:Label color="red"/>
+			</mx:FormItem>
+			
+			<mx:FormItem label="办公电话：" height="30" required="true" direction="horizontal">
+				<mx:TextInput width="250" id="txtOfficePhoneNumber"  text="@{m_userinfo.strOfficePhoneNumber}" 
+							  />
+				<mx:Label color="red"/>
+			</mx:FormItem>
+			
+			<mx:FormItem label="提示：" >
+				<mx:Label id="labelMessage" color="red"/>
+			</mx:FormItem>
+			
+			<mx:FormItem paddingLeft="30" direction="horizontal">
+				<mx:Button label="注册" id="registerButton"  click = "register()" />
+				<mx:Button label="返回" id="btnCancel"  click="btnCancel_clickHandler(event)"/>
+			</mx:FormItem>
+			
+		</mx:Form>
+		
+	</mx:Panel>
+	
+	
+	
+	
+	
+	
+	
+</mx:Canvas>

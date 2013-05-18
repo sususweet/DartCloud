@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" xmlns:view="lab.view.*" xmlns:fileCenterView="lab.view.FileCenter.*"
+		   creationComplete="init(event)" xmlns:cairngorm="com.adobe.cairngorm.*"
+		   xmlns:control="lab.control.*" xmlns:business="lab.business.*" xmlns:adobe="http://www.adobe.com/2006/cairngorm" xmlns:NetApply="lab.view.NetApply.*" >
+	
+	<mx:Script>
+		<![CDATA[
+			import flash.events.TimerEvent;
+			import flash.utils.Timer;
+			import lab.events.LoadConfReadyEvent;
+			import lab.events.LoadConfigureEvent;
+			import lab.events.LoadJobInfoEvent;
+			import lab.events.LoadMonitorDataEvent;
+			import lab.events.LoadUserInfoEvent;
+			import lab.events.LoadWebServiceMonitorDataEvent;
+			import lab.model.DCModelLocator;
+			import lab.util.UtilFunc;
+			import lab.valueObject.Job;
+			import lab.valueObject.User;
+			import lab.valueObject.VM;
+			
+			import mx.collections.ArrayCollection;
+			import mx.containers.TitleWindow;
+			import mx.controls.Alert;
+			import mx.events.FlexEvent;
+			import mx.events.ListEvent;
+			import mx.managers.PopUpManager;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			
+			//单例，全局变量；程序运行时可能用到的一些配置信息。
+			[Bindable]
+			private var dcModelLocator:DCModelLocator = DCModelLocator.getInstance();
+			
+			[Bindable]
+			public var bgImage:Class;           
+			private var timer:Timer;
+			
+			
+			//初始化用户信息。
+			private function init(event:FlexEvent):void
+			{
+				dcModelLocator.addEventListener(LoadConfReadyEvent.EVENT_ID, loadData);
+				loadConfigure();				
+			}
+			
+			private function loadData(event:Event):void
+			{
+				loadUserInfo();
+				
+				//刷新数据
+				timer = new Timer(30000);
+				timer.addEventListener(TimerEvent.TIMER,loadMonitorData);
+				timer.start();
+			}
+			
+			private function loadConfigure():void
+			{
+				var loadConfigureEvent:LoadConfigureEvent = new LoadConfigureEvent();
+				loadConfigureEvent.dispatch();
+			}
+			
+			private function loadUserInfo():void
+			{
+				var user:User = new User();
+				user.iUserId = dcModelLocator.m_user.iUserId;
+				
+				//加载用户信息
+				var loadUserInfoEvent:LoadUserInfoEvent = new LoadUserInfoEvent(user.iUserId);
+				loadUserInfoEvent.dispatch();
+				
+				//加载业务信息
+				var loadJobInfoEvent:LoadJobInfoEvent = new LoadJobInfoEvent(user.iUserId);
+				loadJobInfoEvent.dispatch();
+				
+			}
+			
+			private function loadMonitorData(event:TimerEvent):void
+			{
+				var loadMonitorDataEvent:LoadMonitorDataEvent = new LoadMonitorDataEvent();
+				loadMonitorDataEvent.dispatch();
+				
+				loadServiceData();
+			}
+			
+			private function loadServiceData():void
+			{
+				var loadWebServiceEvent:LoadWebServiceMonitorDataEvent = new LoadWebServiceMonitorDataEvent();
+				loadWebServiceEvent.dispatch(); 
+			}
+			
+		]]>
+	</mx:Script>
+	
+	<mx:Metadata>
+		[Event(name="logout", type="flash.events.Event")]
+	</mx:Metadata>
+	<mx:TabNavigator width="100%" height="100%" styleName="mainTabNavigator" horizontalAlign="left" horizontalGap="2"
+					 fontSize="12" paddingTop="0" selectedIndex="0">
+		
+		<view:BusinessManagementView label="业务管理" width="100%" height="100%" />
+
+		<fileCenterView:downloadFileView label="文件中心" width="100%" height="100%" />
+		
+		<view:ResourceMonitorView label="资源监控" width="100%" height="100%" />
+		<view:ResourceStatisticsView label="资源统计" width="100%" height="100%"/>
+		
+		<view:UserCenterView label="用户中心" width="100%" height="100%"/>
+		<!--
+		<view:NetApplyView label="网络申请" width="100%" height="100%"/>
+		<view:LogView label="日志" width="100%" height="100%"/>
+		<view:HelloWorldRO label="测试界面" width="100%" height="100%" />
+		<view:hostManView label="服务器管理" width="100%" height="100%"/>
+		-->
+	</mx:TabNavigator>
+	
+</mx:Canvas>

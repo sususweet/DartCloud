@@ -1,0 +1,103 @@
+<Graph>
+  <Node id="1" name="工程中心" level="0" nodeIcon="url::assets/center.png" >
+  <Info>
+   节点名：工程中心
+   简介：XXXXXXXX 
+   资源：XXXXXXXXXX
+  </Info>
+  </Node>
+  <Node id="2" name="管控中心" level="1" nodeIcon="url::assets/node.png" >
+  <Info>
+   节点名：管控中心
+   简介：XXXXXXXX 
+   资源：XXXXXXXXXX
+  </Info>
+  </Node>
+  <Node id="3" name="对地观测中心" level="1" desc="This is a description" nodeColor="0xF00000" nodeSize="36" nodeIcon="url::assets/node.png" x="10" y="20" >
+  <Info>
+   节点名：资源卫星中心
+   简介：XXXXXXXX 
+   资源：XXXXXXXXXX
+  </Info>
+  </Node>
+  <Node id="4" name="遥感应用中心" level="1" desc="This is a description" nodeColor="0x00FF00" nodeSize="10" nodeIcon="url::assets/node.png" x="10" y="25" >
+  <Info>
+   节点名：遥感应用中心
+   简介：XXXXXXXX 
+   资源：XXXXXXXXXX
+  </Info>
+  </Node>
+  <Node id="5" name="资源卫星中心" level="1" desc="This is a description" nodeColor="0x00FF00" nodeSize="10" nodeIcon="url::assets/node.png" x="10" y="30" >
+  <Info>
+   节点名：资源卫星中心
+   简介：XXXXXXXX 
+   资源：XXXXXXXXXX
+  </Info>
+  </Node>
+  
+  <Edge fromID="1" toID="2" edgeLabel="3.2MB/S" flow="300" color="0xFFFFFF" edgeClass="sun" edgeIcon="Good" />
+  <Edge fromID="1" toID="3" edgeLabel="2.7MB/S" flow="400" color="0xFFFFFF" edgeClass="sun" edgeIcon="Bad" />
+  <Edge fromID="1" toID="4" edgeLabel="3.2MB/S" flow="200" color="0xFFFFFF" edgeClass="sun" edgeIcon="Good" />
+  <Edge fromID="1" toID="5" edgeLabel="3.2MB/S" flow="200" color="0xFFFFFF" edgeClass="sun" edgeIcon="Good" />
+  
+  <Edge fromID="5" toID="4" edgeLabel="3.2MB/S" flow="80" color="0xFFFFFF" edgeClass="sun" edgeIcon="Good" />
+  <Edge fromID="4" toID="3" edgeLabel="3.2MB/S" flow="80" color="0xFFFFFF" edgeClass="sun" edgeIcon="Bad" />
+  <Edge fromID="3" toID="2" edgeLabel="3.2MB/S" flow="80" color="0xFFFFFF" edgeClass="sun" edgeIcon="Good" />
+  <Edge fromID="2" toID="5" edgeLabel="3.2MB/S" flow="80" color="0xFFFFFF" edgeClass="sun" edgeIcon="Good" />
+  
+  <Node id="11" name="集群1" level="2"  nodeColor="0x8F8FFF" nodeSize="48" nodeIcon="url::assets/computer.png" x="10" y="15" />
+  <Node id="12" name="集群2" level="2" desc="This is a description" nodeColor="0xF00000" nodeSize="48" nodeIcon="url::assets/computer.png" x="10" y="20" />
+  <Node id="13" name="集群3" level="2" desc="This is a description" nodeColor="0xF00000" nodeSize="48" nodeIcon="url::assets/computer.png" x="10" y="20" />
+  <Node id="14" name="集群4" level="2" desc="This is a description" nodeColor="0x00FF00" nodeSize="48" nodeIcon="url::assets/computer.png" x="10" y="25" />
+  <Node id="15" name="集群5" level="2" desc="This is a description" nodeColor="0x333333" nodeSize="48" nodeIcon="url::assets/computer.png" x="10" y="10" />
+  <Node id="16" name="集群6" level="2" desc="This is a description" nodeColor="0x333333" nodeSize="48" nodeIcon="url::assets/computer.png" x="10" y="10" />
+  
+  <Edge fromID="2" toID="11" edgeLabel="3.2MB/S" flow="200" color="0xFFFFFF" edgeClass="sun" edgeIcon="Good" />
+  <Edge fromID="3" toID="12" edgeLabel="3.2MB/S" flow="100" color="0xFFFFFF" edgeClass="sun" edgeIcon="Bad" />
+  <Edge fromID="3" toID="13" edgeLabel="3.2MB/S" flow="80" color="0xFFFFFF" edgeClass="sun" edgeIcon="Good" />
+  <Edge fromID="4" toID="14" edgeLabel="3.2MB/S" flow="90" color="0xFFFFFF" edgeClass="sun" edgeIcon="Bad" />
+  <Edge fromID="5" toID="15" edgeLabel="3.2MB/S" flow="50" color="0xFFFFFF" edgeClass="sun" edgeIcon="Good" />
+  <Edge fromID="5" toID="16" edgeLabel="3.2MB/S" flow="50" color="0xFFFFFF" edgeClass="sun" edgeIcon="Good" />
+  
+  
+ 
+  <Node id="201" level="3" name="节点1" desc="This is a description" nodeColor="0xFFFFFF" nodeSize="48" nodeIcon="url::assets/computer.png" x="10" y="15" />
+  <Node id="202" level="3" name="节点2" desc="This is a description" nodeColor="0xFFFFFF" nodeSize="48" nodeIcon="url::assets/computer.png" x="10" y="20" />
+  <Node id="203" level="3" name="节点3" desc="This is a description" nodeColor="0xFFFFFF" nodeSize="48" nodeIcon="url::assets/computer.png" x="10" y="30" />
+  <Node id="204" level="3" name="节点4" desc="This is a description" nodeColor="0xFFFFFF" nodeSize="48" nodeIcon="url::assets/computer.png" x="10" y="15" />
+  <Node id="205" level="3" name="节点5" desc="This is a description" nodeColor="0xFFFFFF" nodeSize="48" nodeIcon="url::assets/computer.png" x="10" y="20" />
+  <Node id="206" level="3" name="节点6" desc="This is a description" nodeColor="0xFFFFFF" nodeSize="48" nodeIcon="url::assets/computer.png" x="10" y="30" />
+  <Node id="207" level="3" name="节点7" desc="This is a description" nodeColor="0xFFFFFF" nodeSize="48" nodeIcon="url::assets/computer.png" x="10" y="15" />
+  <Node id="208" level="3" name="节点8" desc="This is a description" nodeColor="0xFFFFFF" nodeSize="48" nodeIcon="url::assets/computer.png" x="10" y="20" />
+  <Node id="209" level="3" name="节点9" desc="This is a description" nodeColor="0xFFFFFF" nodeSize="48" nodeIcon="url::assets/computer.png" x="10" y="30" />
+  <Node id="210" level="3" name="节点10" desc="This is a description" nodeColor="0xFFFFFF" nodeSize="48" nodeIcon="url::assets/computer.png" x="10" y="15" />
+  <Node id="211" level="3" name="节点11" desc="This is a description" nodeColor="0xFFFFFF" nodeSize="48" nodeIcon="url::assets/computer.png" x="10" y="20" />
+  <Node id="212" level="3" name="节点12" desc="This is a description" nodeColor="0xFFFFFF" nodeSize="48" nodeIcon="url::assets/computer.png" x="10" y="30" />
+  <Node id="213" level="3" name="节点13" desc="This is a description" nodeColor="0xFFFFFF" nodeSize="48" nodeIcon="url::assets/computer.png" x="10" y="15" />
+  <Node id="214" level="3" name="节点14" desc="This is a description" nodeColor="0xFFFFFF" nodeSize="48" nodeIcon="url::assets/computer.png" x="10" y="20" />
+  <Node id="215" level="3" name="节点15" desc="This is a description" nodeColor="0xFFFFFF" nodeSize="48" nodeIcon="url::assets/computer.png" x="10" y="30" />
+  <Node id="216" level="3" name="节点16" desc="This is a description" nodeColor="0xFFFFFF" nodeSize="48" nodeIcon="url::assets/computer.png" x="10" y="15" />
+  <Node id="217" level="3" name="节点17" desc="This is a description" nodeColor="0xFFFFFF" nodeSize="48" nodeIcon="url::assets/computer.png" x="10" y="20" />
+  <Node id="218" level="3" name="节点18" desc="This is a description" nodeColor="0xFFFFFF" nodeSize="48" nodeIcon="url::assets/computer.png" x="10" y="30" />
+  
+  <Edge fromID="11" toID="201" edgeLabel="3.2MB/S" flow="50" color="0xFFFFFF" edgeClass="sun" edgeIcon="Good" />
+  <Edge fromID="11" toID="202" edgeLabel="3.2MB/S" flow="100" color="0xFFFFFF" edgeClass="sun" edgeIcon="Bad" />
+  <Edge fromID="11" toID="203" edgeLabel="3.2MB/S" flow="200" color="0xFFFFFF" edgeClass="sun" edgeIcon="Good" />
+  <Edge fromID="12" toID="204" edgeLabel="3.2MB/S" flow="80" color="0xFFFFFF" edgeClass="sun" edgeIcon="Good" />
+  <Edge fromID="12" toID="205" edgeLabel="3.2MB/S" flow="50" color="0xFFFFFF" edgeClass="sun" edgeIcon="Good" />
+  <Edge fromID="12" toID="206" edgeLabel="3.2MB/S" flow="90" color="0xFFFFFF" edgeClass="sun" edgeIcon="Bad" />
+  <Edge fromID="13" toID="207" edgeLabel="3.2MB/S" flow="50" color="0xFFFFFF" edgeClass="sun" edgeIcon="Good" />
+  <Edge fromID="13" toID="208" edgeLabel="3.2MB/S" flow="100" color="0xFFFFFF" edgeClass="sun" edgeIcon="Bad" />
+  <Edge fromID="13" toID="209" edgeLabel="3.2MB/S" flow="200" color="0xFFFFFF" edgeClass="sun" edgeIcon="Good" />
+  <Edge fromID="14" toID="210" edgeLabel="3.2MB/S" flow="80" color="0xFFFFFF" edgeClass="sun" edgeIcon="Good" />
+  <Edge fromID="14" toID="211" edgeLabel="3.2MB/S" flow="50" color="0xFFFFFF" edgeClass="sun" edgeIcon="Good" />
+  <Edge fromID="14" toID="212" edgeLabel="3.2MB/S" flow="90" color="0xFFFFFF" edgeClass="sun" edgeIcon="Bad" />
+  <Edge fromID="15" toID="213" edgeLabel="3.2MB/S" flow="50" color="0xFFFFFF" edgeClass="sun" edgeIcon="Good" />
+  <Edge fromID="15" toID="214" edgeLabel="3.2MB/S" flow="100" color="0xFFFFFF" edgeClass="sun" edgeIcon="Bad" />
+  <Edge fromID="15" toID="215" edgeLabel="3.2MB/S" flow="200" color="0xFFFFFF" edgeClass="sun" edgeIcon="Good" />
+  <Edge fromID="16" toID="216" edgeLabel="3.2MB/S" flow="80" color="0xFFFFFF" edgeClass="sun" edgeIcon="Good" />
+  <Edge fromID="16" toID="217" edgeLabel="3.2MB/S" flow="50" color="0xFFFFFF" edgeClass="sun" edgeIcon="Good" />
+  <Edge fromID="16" toID="218" edgeLabel="3.2MB/S" flow="90" color="0xFFFFFF" edgeClass="sun" edgeIcon="Bad" />
+  
+  
+</Graph>

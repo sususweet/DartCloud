@@ -1,0 +1,447 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%"
+		   xmlns:view="lab.view.*" xmlns:BusinessManagement="lab.view.BusinessManagement.*" >
+	<mx:Script>
+		<![CDATA[
+			import lab.events.DeleteOneVmEvent;
+			import lab.events.LoadJobInfoEvent;
+			import lab.events.VmOperationEvent;
+			import lab.model.DCModelLocator;
+			import lab.valueObject.VM;
+			import lab.valueObject.VmActions;
+			import lab.valueObject.VmStatus;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.ArrayList;
+			import mx.controls.Alert;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.events.ListEvent;
+			import mx.managers.PopUpManager;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			
+			//单例，全局变量；程序运行时可能用到的一些配置信息。
+			[Bindable]
+			private var dcModelLocator:DCModelLocator = DCModelLocator.getInstance();
+			
+
+			//开机按钮的响应函数。
+			//开机这个功能比较特殊，需要先调用resubmit使虚拟机处于pend状态，然后再调用deploy使其处于running;
+			//但比较麻烦的地方在于，调用deploy函数需要知道服务器的id。
+			protected function btnStartUp_clickHandler(event:MouseEvent):void
+			{
+				var arrSelect:Array = list.adgJobInfo.getSelectedItem();
+				var iLength:int = arrSelect.length;
+				if(iLength == 0)
+				{
+					Alert.show("请选择要开启的虚拟机！",'提示');
+				}
+				else
+				{
+					var strVmName:String = "";
+					var vmOperationEvent:VmOperationEvent;
+					
+					for(var i:int=0; i<arrSelect.length; i++)
+					{
+						var strVmId:String = arrSelect[i].strVmId;
+						strVmName += " , " + arrSelect[i].strVmName;
+						
+						var strVmStatus:String = arrSelect[i].vm_status;
+						if(strVmStatus == VmStatus.RUNN)
+						{
+							vmOperationEvent = new VmOperationEvent(VmActions.REBOOT,strVmId);
+							vmOperationEvent.dispatch();
+						}
+						else if(strVmStatus == VmStatus.POFF)
+						{
+							vmOperationEvent = new VmOperationEvent(VmActions.RESTART,strVmId);
+							vmOperationEvent.dispatch();
+						}
+					}
+					Alert.show("正在开启虚拟机，请稍等...",'提示');
+					
+				}
+			}
+			
+			protected function btnShutDown_clickHandler(event:MouseEvent):void
+			{
+				var arrSelect:Array = list.adgJobInfo.getSelectedItem();
+				var iLength:int = arrSelect.length;
+				if(iLength == 0)
+				{
+					Alert.show("请选择要关闭的虚拟机！",'提示');
+				}
+				else
+				{
+					var strVmName:String = "";
+					
+					for(var i:int=0; i<arrSelect.length; i++)
+					{
+						var strVmId:String = arrSelect[i].strVmId;
+						strVmName += " , " + arrSelect[i].strVmName;
+						
+						//此处不能调用shutdown接口，否则虚拟机关闭之后就会变成已停止状态，生命周期将结束。
+						var vmOperationEvent:VmOperationEvent = 
+							new VmOperationEvent(VmActions.POWEROFF,strVmId);
+						vmOperationEvent.dispatch();
+					}
+					Alert.show("正在关闭虚拟机，请稍等...",'提示');
+				}
+			}
+
+
+			protected function btnHangUp_clickHandler(event:MouseEvent):void
+			{
+				var arrSelect:Array = list.adgJobInfo.getSelectedItem();
+				var iLength:int = arrSelect.length;
+				if(iLength == 0)
+				{
+					Alert.show("请选择要挂起的虚拟机！",'提示');
+				}
+				else{
+					var strVmName:String = "";
+					
+					for(var i:int=0; i<arrSelect.length; i++)
+					{
+						var strVmId:String = arrSelect[i].strVmId;
+						strVmName += " , " + arrSelect[i].strVmName;
+						var vmOperationEvent:VmOperationEvent = 
+							new VmOperationEvent(VmActions.SUSPEND,strVmId);
+						vmOperationEvent.dispatch();
+					}
+					Alert.show("正在挂起虚拟机，请稍等...",'提示');
+				}
+			}
+
+
+			protected function btnResume_clickHandler(event:MouseEvent):void
+			{
+				var arrSelect:Array = list.adgJobInfo.getSelectedItem();
+				var iLength:int = arrSelect.length;
+				if(iLength == 0)
+				{
+					Alert.show("请选择要恢复的虚拟机！",'提示');
+				}
+				else
+				{
+					var strVmName:String = "";
+					
+					for(var i:int=0; i<arrSelect.length; i++)
+					{
+						var strVmId:String = arrSelect[i].strVmId;
+						strVmName += " , " + arrSelect[i].strVmName;
+						
+						var vmOperationEvent:VmOperationEvent = 
+							new VmOperationEvent(VmActions.RESUME,strVmId);
+						vmOperationEvent.dispatch();
+					}
+					Alert.show("正在恢复虚拟机，请稍等...",'提示');
+				}
+			}
+
+			protected function btnDelete_clickHandler(event:MouseEvent):void
+			{
+				if(list.adgJobInfo.getSelectedItem().length == 0)
+					Alert.show("请选中要删除的虚拟机！");
+				else
+					deleteInfo();
+			}
+
+
+			protected function btnModifyVmConfig_clickHandler(event:MouseEvent):void
+			{
+			}
+
+			
+			public function deleteInfo():void
+			{
+				var arrSelect:Array = list.adgJobInfo.getSelectedItem();
+				var iLength:int = arrSelect.length;
+				if(iLength == 0)
+				{
+					Alert.show("请选择要开启的虚拟机！",'提示');
+				}
+				else{
+					Alert.yesLabel='是';
+					Alert.noLabel='否';
+					Alert.show('删除后虚拟机将不可用，确认要删除吗?', '警告', 1 | 2, this, deleteHandler);
+				}
+			}
+			
+			//点击删除按钮时的响应函数。
+			public function deleteHandler(event:CloseEvent):void
+			{
+				if (event.detail == Alert.YES)
+				{
+					//获取选中的虚拟机信息数组。
+					var selectedVmItems:ArrayList = new ArrayList();
+					var tmpArr:Array = list.adgJobInfo.getSelectedItem();
+					
+					//简单地将list.adgJobInfo.getSelectedItem中的内容赋值给selectedVmItems
+					//是不行的，因为Flex对于这种情况只进行浅拷贝，而我们需要的是深拷贝！
+					for(var i:int=0; i<tmpArr.length; i++)
+					{
+						var strVmId:String = tmpArr[i].strVmId as String;
+						selectedVmItems.addItem(strVmId);
+					}
+					
+					/*
+					for(var i:int=0; i<selectedVmItems.length; i++)
+					{
+						var strVmId:String = selectedVmItems[i].strVmId;
+						var index:int = getSelectedIndex(dcModelLocator.selectedVmInfoAC, strVmId);
+						dcModelLocator.selectedVmInfoAC.removeItemAt(index);
+						
+						var deleteOneVmEvent:DeleteOneVmEvent = new DeleteOneVmEvent(strVmId);
+						deleteOneVmEvent.dispatch();
+					}
+					*/
+					
+					DeleteVmListRO.deleteVms(selectedVmItems);
+					
+				}
+			}
+			
+			//在ArrayCollection中查找虚拟机ID为strVmId的下标index。
+			public function getSelectedIndex(vmArrInfo:ArrayCollection, strVmId:String):int
+			{
+				for(var i:int=0; i<vmArrInfo.length; i++)
+				{
+					if(vmArrInfo[i].strVmId == strVmId)
+						return i;
+				}
+				return 0;
+			}
+
+			//点击刷新按钮之后，重新加载用户的信息。
+			protected function btnUpdateInfo_clickHandler(event:MouseEvent):void
+			{
+				reloadJobInfo();
+			}
+			
+			
+			protected function btnAccessMode_clickHandler(event:MouseEvent):void
+			{
+				reloadJobInfo();
+			}
+			
+			
+			protected function reloadJobInfo():void
+			{
+				var loadJobInfoEvent:LoadJobInfoEvent = new LoadJobInfoEvent(dcModelLocator.m_user.iUserId);
+				loadJobInfoEvent.dispatch();
+			}
+
+			
+			protected function btnLogout_clickHandler(event:MouseEvent):void
+			{
+				trace("aaa: " + dcModelLocator.curUsername);
+				
+//				var strWebServerIp:String = dcModelLocator.webServerIp;
+//				if(strWebServerIp == "localhost")
+//					strWebServerIp = strWebServerIp + ":8080";
+				
+				var request:URLRequest = new URLRequest("http://" + dcModelLocator.strDomainName +"/DartCloud/DartCloud.html" );  
+				navigateToURL(request,"_self");
+			}
+
+
+			import mx.managers.PopUpManager;
+			/**
+			 * 在一个业务中添加虚拟机。
+			 */
+			protected function btnAddVm_clickHandler(event:MouseEvent):void
+			{
+//				trace("aaa" + dcModelLocator.curSelectedJob.strJobName);
+				if(null == dcModelLocator.curSelectedJob || 0 == dcModelLocator.curSelectedJob.iJobId)
+				{
+					Alert.show("请选择在哪个业务下添加虚拟机！");
+					return;
+				}
+				else
+				{
+					var addVms_Step1:addVmView_step1 = PopUpManager.createPopUp(this, addVmView_step1, true) as addVmView_step1;
+					//使弹出框居中
+					PopUpManager.centerPopUp(addVms_Step1);
+				}
+				
+			}
+
+
+			/**
+			 * 点击Hadoop自动部署时的响应函数。
+			 */
+			protected function btnHadoopAutoConf_clickHandler(event:MouseEvent):void
+			{
+				if(null == dcModelLocator.curSelectedJob || 0 == dcModelLocator.curSelectedJob.iJobId)
+				{
+					Alert.show("请选择在哪个业务下部署Hadoop！");
+					return;
+				}
+				else if(null == dcModelLocator.curSelectedJob.vmArrayInfo || dcModelLocator.curSelectedJob.vmArrayInfo.length == 0)
+				{
+					Alert.show("该业务下没有虚拟机，请先申请虚拟机！");
+					return;
+				}
+				else if(dcModelLocator.curSelectedJob.vmArrayInfo.length < 2)//集群的最小数目是2.
+				{
+					Alert.show("Hadoop集群的最小虚拟机个数为2，请先申请虚拟机！");
+					return;
+				}
+				else
+				{
+					var hadoopView:hadoopAutoConf = PopUpManager.createPopUp(this, hadoopAutoConf, true) as hadoopAutoConf;
+					//使弹出框居中
+					PopUpManager.centerPopUp(hadoopView);
+				}
+			}
+
+
+			/**
+			 * 批量申请虚拟机访问外网。
+			 */
+			import lab.valueObject.VMNetStatus;
+			protected function btnApplyPublicNet_clickHandler(event:MouseEvent):void
+			{
+				var arrSelect:Array = list.adgJobInfo.getSelectedItem();
+				var iLength:int = arrSelect.length;
+				if(iLength == 0)
+				{
+					Alert.show("未选中任何虚拟机！",'提示');
+				}
+				else{
+					var strVmName:String = "";
+					var arrStrVmId:ArrayCollection = new ArrayCollection();
+					var hasItem:Boolean = false;
+					
+					for(var i:int=0; i<arrSelect.length; i++)
+						if(arrSelect[i].iNetStatus != 2)
+						{
+							arrStrVmId.addItem(arrSelect[i].strVmId);
+							hasItem = true;
+						}
+					if(hasItem)
+						applyPublicNetRO.updateVmNetStatus(arrStrVmId,VMNetStatus.lOCAL2PUBLIC);
+					else
+						Alert.show("操作不合法，请求已被忽略！","提示");
+				}
+			}
+			protected function applyPublicNetRO_resultHandler(event:ResultEvent):void
+			{
+				Alert.show("申请已经提交，正在等待管理员审核！","提示");
+			}
+
+			protected function applyPublicNetRO_faultHandler(event:FaultEvent):void
+			{
+				Alert.show("申请外网出错！" + event.fault.toString(),"错误");
+			}
+			
+			/**
+			 * 在dcModelLocator.selectedVmInfoAC中查找虚拟机标识为strVmId的下标;
+			 * 若不存在，则返回-1.
+			 */
+			private function findIndex(strVmId:String):int
+			{
+				var index:int = -1; //index的默认值是-1
+				for(var i:int=0; i<dcModelLocator.selectedVmInfoAC.length; i++)
+					if(dcModelLocator.selectedVmInfoAC[i].strVmId == strVmId)
+						return i;
+				return index;
+			}
+
+
+			protected function DeleteVmListRO_resultHandler(event:ResultEvent):void
+			{
+				Alert.show("虚拟机成功删除！");
+				//删除成功后需要重新加载job的信息。
+				reloadJobInfo();
+			}
+
+
+			protected function DeleteVmListRO_faultHandler(event:FaultEvent):void
+			{
+				Alert.show("虚拟机删除出现异常！" + event.fault);
+			}
+
+		]]>
+	</mx:Script>
+	
+	<mx:Metadata>
+		[Event(name="start up",type="flash.events.Event")]
+		[Event(name="updateUserInfo",type="flash.events.Event")]
+	</mx:Metadata>
+	<mx:RemoteObject id="applyPublicNetRO" destination="NetApplyServiceDest" result="applyPublicNetRO_resultHandler(event)"
+					 fault="applyPublicNetRO_faultHandler(event)" />
+	<mx:RemoteObject id="DeleteVmListRO" destination="VmOperationDest" result="DeleteVmListRO_resultHandler(event)"
+					 fault="DeleteVmListRO_faultHandler(event)" />
+
+	<mx:VBox width="100%" height="100%" horizontalAlign="center">
+		<mx:HBox width="100%" height="50" paddingLeft="20" paddingRight="20">
+			<mx:HBox height="100%" horizontalAlign="center" verticalAlign="middle">
+				<!--
+				<mx:RadioButton label="拓扑视图" click="{viewStack.selectedChild = topology; controlButton.visible = false;}"/>
+				-->
+			</mx:HBox>
+			<mx:HBox height="100%" horizontalAlign="center" verticalAlign="middle">
+
+				<mx:RadioButton label="表视图" click="{viewStack.selectedChild = list; controlButton.visible = true;}" selected="true"/>
+			</mx:HBox>
+			<mx:HBox id="controlButton" width="100%" height="100%" horizontalAlign="left" verticalAlign="middle" horizontalGap="20" paddingLeft="50">
+				
+				<mx:HBox height="100%" horizontalAlign="center" verticalAlign="middle">
+					<mx:Button label="Hadoop自动部署" id="btnHadoopAutoConf" click="btnHadoopAutoConf_clickHandler(event)"></mx:Button>
+				</mx:HBox>
+			
+				<mx:HBox height="100%" horizontalAlign="center" verticalAlign="middle">
+					<mx:Button label="添加虚拟机" id="btnAddVm" click="btnAddVm_clickHandler(event)"></mx:Button>
+				</mx:HBox>
+				
+				<mx:HBox height="100%" horizontalAlign="center" verticalAlign="middle">
+					<mx:Button label="开机/重启" id="btnStartUp" click="btnStartUp_clickHandler(event)"></mx:Button>
+				</mx:HBox>
+				<mx:HBox height="100%" horizontalAlign="center" verticalAlign="middle">
+					<mx:Button label="关机" id="btnShutDown" click="btnShutDown_clickHandler(event)"></mx:Button>
+				</mx:HBox>
+				<mx:HBox height="100%" horizontalAlign="center" verticalAlign="middle">
+					<mx:Button label="挂起" id="btnHangUp" click="btnHangUp_clickHandler(event)"></mx:Button>
+				</mx:HBox>
+				<mx:HBox height="100%" horizontalAlign="center" verticalAlign="middle">
+					<mx:Button label="恢复" id="btnResume" click="btnResume_clickHandler(event)"></mx:Button>
+				</mx:HBox>
+				
+				<mx:HBox height="100%" horizontalAlign="center" verticalAlign="middle">
+					<mx:Button label="删除" id="btnDelete" click="btnDelete_clickHandler(event)"></mx:Button>
+				</mx:HBox>
+				
+				<mx:HBox height="100%" horizontalAlign="center" verticalAlign="middle">
+					<mx:Button label="申请外网访问" id="btnApplyPublicNet" click="btnApplyPublicNet_clickHandler(event)"></mx:Button>
+				</mx:HBox>
+				
+				
+				
+				<mx:HBox height="100%" horizontalAlign="center" verticalAlign="middle">
+					<mx:Button label="刷新数据" id="btnUpdateInfo" click="btnUpdateInfo_clickHandler(event)"></mx:Button>
+				</mx:HBox>
+				
+				
+				
+				<mx:HBox height="100%" horizontalAlign="center" verticalAlign="middle" paddingRight="0">
+					<mx:Label text="你好！ "  />
+					<mx:Label id="labelHello" text="{dcModelLocator.curUsername}"  />
+					<mx:Button label="退出登录" id="btnLogout" click="btnLogout_clickHandler(event)"/>
+				</mx:HBox>
+				
+			</mx:HBox>
+		</mx:HBox>
+		
+		<mx:ViewStack id="viewStack" width="100%" height="100%" paddingLeft="20" paddingRight="20" paddingBottom="20">
+			<BusinessManagement:list id="list" />
+			<!--
+			<BusinessManagement:topology id="topology" />
+			-->
+		</mx:ViewStack>
+		
+	</mx:VBox>
+	
+</mx:Canvas>

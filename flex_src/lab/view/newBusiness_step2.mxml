@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow  xmlns:mx="http://www.adobe.com/2006/mxml" width="600" height="650"
+				 title="新建业务  第2步（共2步）" showCloseButton="true" fontSize="12" 
+				 close="PopUpManager.removePopUp(this);" creationComplete="init()">
+	<mx:Script>
+		<![CDATA[
+			import lab.events.CreateOneJobEvent;
+			import lab.valueObject.Job;
+			
+			import mx.containers.TitleWindow;
+			import mx.controls.Alert;
+			import mx.managers.PopUpManager;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			
+			private var step_one:newBusiness_step1;
+			private var step_three:TitleWindow;
+			private static var createSuccess:Boolean = false;
+			
+			[Bindable]
+			public var job:Job = new Job();
+			public var strIp:String = "";
+			
+			
+			public static function getCreateSuccess():Boolean{
+				return createSuccess;
+			}
+			
+			private function cancel2():void{
+				PopUpManager.removePopUp(this);
+			}
+			
+			private function init():void{
+				cpuNumValue.text = job.iCpuNum+"个";
+				memoryValue.text = job.iMemSize+"M";
+				storageValue.text = job.iStorageSize+"G";
+				osType.text = job.iOSType+"";
+				time.text = int(job.iApplyHour/24).toString() +"天"+ (job.iApplyHour%24).toString()+"小时";
+				vmNum.text = job.iVmNum+"";
+				description.text = job.strJobDescription;
+			}
+			
+			//跳转到第一步
+			private function step_1():void{
+				PopUpManager.removePopUp(this);
+				step_one = PopUpManager.createPopUp(this, newBusiness_step1, true) as newBusiness_step1;
+				step_one.job = job;
+				//使弹出框居中
+				PopUpManager.centerPopUp(step_one);
+			}
+			
+			//确认
+			public function createJob():void{
+//				CheckImageEnoughRO.checkImage(job.iVmNum, job.iOSType);
+				sure.enabled = false;
+				sure.label = "请稍等";
+				var createOneJobEvent:CreateOneJobEvent = new CreateOneJobEvent(job);
+				createOneJobEvent.dispatch();
+				//清除当前的弹出窗口。
+				PopUpManager.removePopUp(this);
+				Alert.show("正在向数据中心申请资源，请稍等...");
+			}
+			
+			
+//			protected function CheckImageEnoughRO_resultHandler(event:ResultEvent):void
+//			{
+//				var isEnough:Boolean = event.result;
+//				if(isEnough == true)
+//				{
+//					var createOneJobEvent:CreateOneJobEvent = new CreateOneJobEvent(job);
+//					createOneJobEvent.dispatch();
+//					
+//					//清除当前的弹出窗口。
+//					PopUpManager.removePopUp(this);
+//				}
+//				else
+//				{
+//					Alert.show("虚拟机镜像不足，请等待！" + event.result.toString());
+//				}
+//				
+//			}
+//			
+//			
+//			protected function CheckImageEnoughRO_faultHandler(event:FaultEvent):void
+//			{
+//				Alert.show("新建业务出现异常！" + event.toString());
+//			}
+			
+			
+		]]>
+	</mx:Script>
+	<!--endpoint="http://localhost:8080/DartCloud/messagebroker/amf" 	
+	<mx:ModuleLoader id="loader" applicationDomain="{ApplicationDomain.currentDomain}" />
+	<mx:RemoteObject id="CheckImageEnoughRO" destination="ImageServiceDest" result="CheckImageEnoughRO_resultHandler(event)" 
+	fault="CheckImageEnoughRO_faultHandler(event)" />
+	-->
+	
+	
+	
+	<mx:Form id="secondStep" width="100%" paddingLeft="50" paddingTop="30">
+		<mx:FormItem label="业务名称：" height="30">
+			<mx:Label width="200" id="jobName" text="@{job.strJobName}"></mx:Label>
+		</mx:FormItem>
+		<mx:FormItem label="CPU：" id="cpuNum" height="30">
+			<mx:Label width="200" id="cpuNumValue" ></mx:Label>
+		</mx:FormItem>
+		<mx:FormItem label="内存：" height="30">
+			<mx:Label width="200"  id="memoryValue"></mx:Label>
+		</mx:FormItem>
+		<mx:FormItem label="存储：" height="30">
+			<mx:Label width="200" id="storageValue"></mx:Label>
+		</mx:FormItem>
+		<mx:FormItem label="操作系统：" height="30">
+			<mx:Label width="200" id="osType"></mx:Label>
+		</mx:FormItem>
+		<mx:FormItem label="资源申请时间：" height="30">
+			<mx:Label width="200" id="time"></mx:Label>
+		</mx:FormItem>
+		<mx:FormItem label="虚拟机个数：" height="30">
+			<mx:Label width="200" id="vmNum"></mx:Label>
+		</mx:FormItem>
+		<mx:FormItem label="业务描述：">
+			<mx:TextArea id="description" width="300" height="80" text="@{job.strJobDescription}"/>
+		</mx:FormItem>
+		
+		<mx:FormItem direction="horizontal" width="100%" paddingTop="20" paddingLeft="-10">
+			<mx:Button id="cancel" label="取消" click="cancel2();"></mx:Button>
+			<mx:Button id="modify" label="修改" click="step_1();"></mx:Button>
+			<mx:Button id="sure" label="确认" click="createJob();"></mx:Button>
+		</mx:FormItem>
+	</mx:Form>
+	<mx:ControlBar></mx:ControlBar>
+</mx:TitleWindow>	

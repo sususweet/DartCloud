@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			    xmlns:s="library://ns.adobe.com/flex/spark" 
+			    xmlns:mx="library://ns.adobe.com/flex/mx" layout="vertical" verticalGap="0" xmlns:control="lab.control.*"
+				xmlns:view="lab.view.*" 
+				paddingTop="0" paddingLeft="0" paddingRight="0" paddingBottom="0" horizontalAlign="left"
+	
+				minWidth="900" minHeight="700" >
+
+	<fx:Style>
+		@namespace mx "http://www.adobe.com/2006/mxml";
+		mx|Alert{
+			titleStyleName:	 title;
+			messageStyleName: message;
+			borderColor:	 	white;
+			backgroundColor:	white;
+			dropShadowEnabled:	true;
+			buttonStyleName:	button;
+		}
+		
+		.title {
+			fontSize:	16;
+			fontWeight:	bold;
+			color:		red;
+		}
+		.message {
+			fontSize:	14;
+			color:		red;
+		}
+		.button {
+			color:		red;
+		}
+	</fx:Style>
+
+	
+	<!-- 头部 -->
+	<mx:VBox width="100%" height="92" minWidth="900" paddingLeft="0" paddingRight="0" paddingTop="0" paddingBottom="0" >
+		<mx:Canvas width="100%" height="92">
+			<mx:Image source="@Embed(source='assets/imgs/headerbk.png')" width="100%" height="92" minWidth="0" maintainAspectRatio="false"/>
+			<mx:Image source="@Embed(source='assets/imgs/dart-logo.png')" height="92" minWidth="0" maintainAspectRatio="false"/>
+		</mx:Canvas>
+	</mx:VBox>
+	
+	<!-- 中间内容 -->
+	<mx:VBox width="100%" height="100%" minWidth="900" paddingLeft="0" paddingRight="0" paddingTop="0" paddingBottom="0" >
+		<mx:Canvas width="100%" height="100%">
+			<mx:Image source="@Embed(source='assets/imgs/background.png')" width="100%" height="100%" maintainAspectRatio="false"/>
+			<mx:HBox width="100%" height="100%" paddingLeft="0" paddingRight="0" paddingTop="10" paddingBottom="20" borderStyle="none">
+				<view:index>
+				</view:index>
+			</mx:HBox>
+		</mx:Canvas>
+	</mx:VBox>
+	
+	<!-- 底部 -->
+	<mx:VBox width="100%" height="89" minWidth="900" horizontalAlign="center" paddingLeft="0" paddingRight="0" paddingTop="0" paddingBottom="0" >
+		<mx:Canvas width="100%" height="89">
+			<mx:Image width="100%" height="100%" maintainAspectRatio="false" source="@Embed(source='assets/imgs/foot_bg.png')"/>
+			<mx:HBox width="100%" height="100%" horizontalAlign="center" verticalAlign="middle">
+				<mx:Image source="@Embed(source='assets/imgs/foot-logo.png')"/>	
+				<mx:VBox verticalCenter="0" horizontalCenter="0" fontFamily="Times New Roman" fontSize="13" color="#838686" verticalGap="0">
+					<mx:Label text="地址：浙江省杭州市西湖区文三路232号   邮编：100101" />
+					<mx:Label text="技术支持：浙江大学.中国云翻译服务支撑平台" />
+					<mx:Label text="Copyright 2012Inc.All rights reserved." />
+				</mx:VBox>
+			</mx:HBox>
+		</mx:Canvas>
+	</mx:VBox>
+
+</mx:Application>

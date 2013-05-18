@@ -1,0 +1,707 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:NavigatorContent xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					xmlns:s="library://ns.adobe.com/flex/spark" 
+					xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:local="dg.*"
+					creationComplete="initApp(event)" xmlns:myadg="dg.myadg.*">
+	<s:layout>
+		<s:VerticalLayout/>
+	</s:layout>
+	
+	<fx:Script>
+		<![CDATA[
+			import dg.myadg.CheckBoxHeaderRenderer;
+			import dg.myadg.CheckBoxItemRenderer;
+			import dg.myadg.CheckboxColumn;
+			
+			import lab.events.DeleteOneVmEvent;
+			import lab.events.LoadUserInfoEvent;
+			import lab.events.VmOperationEvent;
+			import lab.model.DCModelLocator;
+			import lab.valueObject.Job;
+			import lab.valueObject.User;
+			import lab.valueObject.VM;
+			import lab.valueObject.VmActions;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.HierarchicalData;
+			import mx.containers.TitleWindow;
+			import mx.controls.Alert;
+			import mx.controls.Button;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.events.ListEvent;
+			import mx.managers.PopUpManager;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.soap.WebService;
+			
+			//单例，全局变量；程序运行时可能用到的一些配置信息。
+			[Bindable]
+			private var dcModelLocator:DCModelLocator = DCModelLocator.getInstance();
+			
+			public function initApp(event:FlexEvent):void
+			{
+			}
+			
+			
+			private var columns:Array=new Array();
+			
+			protected function dgd_initializeHandler(event:FlexEvent):void
+			{
+				if (adgJobInfo.hasCheck)
+				{
+					var checkColumn:CheckboxColumn=new CheckboxColumn();
+					checkColumn.itemRenderer=new ClassFactory(CheckBoxItemRenderer);
+					checkColumn.headerRenderer=new ClassFactory(CheckBoxHeaderRenderer);
+					checkColumn.dataField="dgSelected";//"dgSelected"这一属性其他地方需要用到，不能随意乱改！
+					checkColumn.width=25;
+					columns.push(checkColumn);
+				}	
+			}
+			
+			protected function dgd_creationCompleteHandler(event:FlexEvent):void
+			{
+				if (adgJobInfo.columns.length > 0)
+				{
+					for (var j:int=0; j < adgJobInfo.columns.length; j++)
+					{
+						if (adgJobInfo.columns[j].dataField != null)
+						{
+							columns.push(adgJobInfo.columns[j]);
+						}
+					}
+				}
+				adgJobInfo.columns=columns;
+			}
+			
+			
+			public function lbtn_ShowJobDetailInfo_Handler(event:MouseEvent):void
+			{
+				dispatchEvent(new Event( 'showJobDetailInfo' ));
+			}
+			
+
+
+			
+			public function btnDelete_clickHandler(event:Event):void
+			{
+				Alert.yesLabel='是';
+				Alert.noLabel='否';
+				Alert.show('确认要删除吗?', '提示', 1 | 2, this, deleteHandler);
+			}
+			
+			
+			
+			public function deleteHandler(event:CloseEvent):void
+			{
+				if (event.detail == Alert.YES)
+				{
+					var strVmId:String = dcModelLocator.selectedVmInfoAC[adgJobInfo.selectedIndex].strVmId;
+					var index:int = getSelectedIndex(dcModelLocator.selectedVmInfoAC, strVmId);
+					dcModelLocator.selectedVmInfoAC.removeItemAt(index);
+					var deleteOneVmEvent:DeleteOneVmEvent = new DeleteOneVmEvent(strVmId);
+					deleteOneVmEvent.dispatch();
+				}
+			}
+			
+			//在ArrayCollection中查找虚拟机ID为strVmId的下标index。
+			public function getSelectedIndex(vmArrInfo:ArrayCollection, strVmId:String):int
+			{
+				for(var i:int=0; i<vmArrInfo.length; i++)
+				{
+					if(vmArrInfo[i].strVmId == strVmId)
+						return i;
+				}
+				return 0;
+			}
+			
+			
+			public function lbtnStart_clickHandler(event:Event):void
+			{
+				var strVmId:String = dcModelLocator.selectedVmInfoAC[adgJobInfo.selectedIndex].strVmId;
+				
+				var vmOperationEvent:VmOperationEvent = 
+					new VmOperationEvent(VmActions.RESTART,strVmId);
+				vmOperationEvent.dispatch();
+			}
+			
+
+			public function btnShotDown_clickHandler(event:Event):void
+			{
+				Alert.show('虚拟机正在运行，确认要关机吗?', '提示', 1 | 2, this, vmShutdownHandler);
+				
+			}
+			
+			public function vmShutdownHandler(event:CloseEvent):void
+			{
+				if (event.detail == Alert.YES)
+				{
+					var strVmId:String = dcModelLocator.selectedVmInfoAC[adgJobInfo.selectedIndex].strVmId;
+					
+					var vmOperationEvent:VmOperationEvent = 
+						new VmOperationEvent(VmActions.POWEROFF,strVmId);
+					vmOperationEvent.dispatch();
+				}
+			}
+			
+			import flash.net.navigateToURL;
+			private var vncConnect:vncView = new vncView();
+			private var websshConnect:websshView = new websshView();
+			
+			public function btnVncCon_clickHandler(event:Event):void
+			{
+				var strVmIp:String = dcModelLocator.selectedVmInfoAC[adgJobInfo.selectedIndex].strVmIp;
+				//Alert.show("虚拟机IP：" + strVmIp);
+				openAnNewUrlRequest(strVmIp,true);
+			}
+			
+			public function btnwebssh_clickHandler(event:Event):void
+			{
+				var strVmIp:String = dcModelLocator.selectedVmInfoAC[adgJobInfo.selectedIndex].strVmIp;
+//				isVncOrWebssh = false; 
+//				getVmIpRO.vmId2IP(strVmId);
+				//Alert.show("虚拟机IP：" + strVmIp);
+				openAnNewUrlRequest(strVmIp,false);
+			}
+			import lab.valueObject.NetType;
+			/**
+			 * 打开一个新的请求，vnc或者是webssh；如果isVncFlag为true，则打开一个vnc请求，否则打开一个webssh请求。
+			 */
+			protected function openAnNewUrlRequest(strVmIp:String,isVncFlag:Boolean):void
+			{
+				//通过AdvancedDataGrid中的数据来获取虚拟机所对应的代理服务器IP。
+				var strProxyIp:String = dcModelLocator.strDomainName;
+				
+				if(dcModelLocator.curNetType == NetType.LAN_IP)
+				{
+					strProxyIp = dcModelLocator.selectedVmInfoAC[adgJobInfo.selectedIndex].strZoneLAN_Ip;
+				}
+				else if(dcModelLocator.curNetType == NetType.SCHOOL_IP)
+				{
+					strProxyIp = dcModelLocator.selectedVmInfoAC[adgJobInfo.selectedIndex].strZoneSchoolIp;
+				}
+				else if(dcModelLocator.curNetType == NetType.PUBLIC_IP)
+				{
+					strProxyIp = dcModelLocator.selectedVmInfoAC[adgJobInfo.selectedIndex].strZonePublicIp;
+				}
+				else if(dcModelLocator.curNetType == NetType.LOCALHOST)
+				{
+					strProxyIp = dcModelLocator.strDomainName;
+				}
+				
+				
+				if(strVmIp != null)//找到对应的IP
+				{
+					if(isVncFlag)//为true时是vnc连接。
+					{
+						var strVncUrl:String = "http://" + strProxyIp + ":5801/" + strVmIp + ":5801/";
+						var vncUrl:URLRequest = new URLRequest(strVncUrl);
+						navigateToURL(vncUrl);
+					}
+					else //webssh连接
+					{
+						var strWebsshUrl:String = "http://" + strProxyIp + ":4200/" + strVmIp + ":4200/";
+						var websshUrl:URLRequest = new URLRequest(strWebsshUrl);
+						navigateToURL(websshUrl);
+					}
+					
+				}
+				else
+				{
+					Alert.show("找不到该虚拟机的IP信息，该虚拟机可能出现异常，请删除！");
+				}
+			}
+
+
+			protected function adgJobInfo_itemClickHandler(event:ListEvent):void
+			{
+			}
+
+
+			protected function GetVmInfoXmlRO_resultHandler(event:ResultEvent):void
+			{
+				var strVmInfo:String = event.result as String;
+			}
+
+
+			protected function GetVmInfoXmlRO_faultHandler(event:FaultEvent):void
+			{
+			}
+			
+			
+			protected function getVmIpRO_resultHandler(event:ResultEvent):void
+			{
+				var strVmIp:String = event.result as String;
+				
+				
+			}
+			
+			
+			protected function getVmIpRO_faultHandler(event:FaultEvent):void
+			{
+				trace("vmServiceRO fault: " + event.fault.toString());
+			}
+
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		
+		
+		<!--如果vmServiceRO与webssh_vmServiceRO指向同一个destination，则点击webssh连接的时候，可能出现vnc连接。
+		<mx:RemoteObject id="webssh_vmServiceRO" destination="VMServiceDest" result="webssh_vmServiceRO_resultHandler(event)" 
+		fault="webssh_vmServiceRO_faultHandler(event)"/>
+		<mx:RemoteObject id="GetVmInfoXmlRO" destination="VmOperationDest" 
+		result="GetVmInfoXmlRO_resultHandler(event)" fault="GetVmInfoXmlRO_faultHandler(event)"/>
+		-->
+		
+		<mx:RemoteObject id="getVmIpRO" destination="VmOperationDest" result="getVmIpRO_resultHandler(event)" 
+						 fault="getVmIpRO_faultHandler(event)"/>
+		
+	</fx:Declarations>
+	
+	
+	
+	<local:AdvancedDataGrid id="adgJobInfo" width="100%" height="100%" sortExpertMode="true"
+							hasCheck="true" initialize="dgd_initializeHandler(event)" dataProvider="{dcModelLocator.selectedVmInfoAC}"
+							creationComplete="dgd_creationCompleteHandler(event)" sortableColumns="false" itemClick="adgJobInfo_itemClickHandler(event)">
+		<local:columns>
+			<mx:AdvancedDataGridColumn dataField="strVmName" headerText="虚拟机名称" textAlign="center" width="80"/>
+			<mx:AdvancedDataGridColumn dataField="strJobName" headerText="所属业务" textAlign="center" width="80"/>
+			<mx:AdvancedDataGridColumn dataField="strZoneName" headerText="所属数据中心" textAlign="center" width="80"/>
+			<mx:AdvancedDataGridColumn dataField="strVmNetStatus" headerText="网络权限" textAlign="center" width="80"/>
+			<mx:AdvancedDataGridColumn dataField="vm_status" headerText="虚拟机状态" textAlign="center" color="blue" width="80">
+				<mx:itemRenderer>
+					<fx:Component>
+						<mx:HBox>
+
+							<fx:Script>
+								<![CDATA[
+									import flash.events.TimerEvent;
+									
+									import lab.events.DisableVmOpBtnEvent;
+									import lab.events.EnableVmOpBtnEvent;
+									import lab.valueObject.VmStatus;
+									
+									import mx.controls.Alert;
+									import mx.events.FlexEvent;
+									import mx.rpc.events.FaultEvent;
+									import mx.rpc.events.ResultEvent;
+									private const TIMER_INTERVAL:int = 5000; //每隔多少时间刷新数据
+									private var t:Timer;
+									
+									
+									protected function labelVmStatus_creationCompleteHandler(event:FlexEvent):void
+									{
+										t = new Timer(TIMER_INTERVAL);
+										t.addEventListener(TimerEvent.TIMER,updateTimer);
+										t.start();
+									}
+									private function updateTimer(evt:TimerEvent):void{
+										if(null == data)
+											return;
+										var strVmId:String = data.strVmId;
+										
+										GetVmStatusRO.getVmStatus(strVmId);
+									}
+
+									protected function GetVmStatusRO_resultHandler(event:ResultEvent):void
+									{
+										var strVmStatus:String = event.result as String;
+										var strPend:String = "pend";
+										
+										if(null == data)
+											return;
+										var strVmId:String = data.strVmId;
+										
+										//更新dcModelLocator.selectedVmInfoAC中vm_status的信息。
+										//data即为Datagrid显示的数据源。
+										data.vm_status = strVmStatus;
+										
+										//若当前虚拟机的状态为pend，则重新部署虚拟机。
+										if(strVmStatus == strPend)
+										{
+											DeployVmRO.deployVm(strVmId);
+										}
+										
+										strVmStatus = VmStatus.getChineseVmStatus(strVmStatus);
+										labelVmStatus.text = strVmStatus;
+									}
+
+
+									protected function GetVmStatusRO_faultHandler(event:FaultEvent):void
+									{
+//										trace("GetVmStatusRO: " + event.fault.toString());
+										labelVmStatus.text = "无法获得虚拟机状态！"
+									}
+
+									protected function DeployVmRO_resultHandler(event:ResultEvent):void
+									{
+										trace("部署虚拟机" + data.strVmId + "成功: " + event.result.toString());
+									}
+
+
+									protected function DeployVmRO_faultHandler(event:FaultEvent):void
+									{
+										trace("开启虚拟机失败" + event.fault.toString());
+									}
+
+								]]>
+							</fx:Script>
+							
+							<fx:Declarations>
+								<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+								<mx:RemoteObject id="GetVmStatusRO" destination="VmOperationDest" 
+												 result="GetVmStatusRO_resultHandler(event)" fault="GetVmStatusRO_faultHandler(event)"/>
+								<mx:RemoteObject id="DeployVmRO" destination="VmOperationDest" 
+												 result="DeployVmRO_resultHandler(event)" fault="DeployVmRO_faultHandler(event)"/> 
+							</fx:Declarations>
+
+							<mx:Label id="labelVmStatus" text="正在加载..." creationComplete="labelVmStatus_creationCompleteHandler(event)"/>
+						</mx:HBox>
+							
+					</fx:Component>
+				</mx:itemRenderer>
+			</mx:AdvancedDataGridColumn>
+			<mx:AdvancedDataGridColumn dataField="cpu_status" headerText="CPU" textAlign="center" width="80">
+				<mx:itemRenderer>
+					<fx:Component>
+						
+						<mx:HBox horizontalGap="1">
+							
+							<fx:Script>
+								<![CDATA[
+									import flash.events.TimerEvent;
+									import flash.utils.Timer;
+									
+									import flashx.textLayout.formats.Float;
+									
+									import mx.collections.ArrayCollection;
+									import mx.controls.Alert;
+									import mx.events.FlexEvent;
+									import mx.rpc.events.FaultEvent;
+									import mx.rpc.events.ResultEvent;
+									
+									//cpu的实时监控数据是从本地xml文件中进行读取的，并定期对该xml文件进行更新；
+									//更新xml文件只需调用VMMonitor中的writeVMInfoXML函数。
+									
+									private const TIMER_INTERVAL:int = 5000; //每隔多少时间刷新数据
+									private var t:Timer;
+									
+									protected function bar_creationCompleteHandler(event:FlexEvent):void
+									{
+										t = new Timer(TIMER_INTERVAL);
+										t.addEventListener(TimerEvent.TIMER,updateTimer);
+										t.start();
+									}
+									
+									private function updateTimer(evt:TimerEvent):void{
+										if(null == data)
+											return;
+										var strVmId:String = data.strVmId;
+										bar.setProgress(30 , 100);
+										//GetCpuStatusRO.getCpuUsage(strVmId);
+									}
+									override public function set data(value:Object):void{
+										super.data = value;
+									}
+
+									protected function bar_clickHandler(event:MouseEvent):void
+									{
+									}
+
+
+									protected function GetCpuStatusRO_resultHandler(event:ResultEvent):void
+									{
+										var cpuUsage:int = event.result as int;
+										bar.setProgress(cpuUsage, 100);
+										trace("cpu_result"+ event.result as String);
+									}
+
+
+									protected function GetCpuStatusRO_faultHandler(event:FaultEvent):void
+									{
+//										trace("cpu_fault"+ event.fault as String);
+									}
+
+
+									protected function button_clickHandler(event:MouseEvent):void
+									{
+										var strVmId:String = data.strVmId;
+										GetCpuStatusRO.getCpuUsage(strVmId);
+									}
+
+								]]>
+							</fx:Script>
+							
+							<fx:Declarations>
+								<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+								<mx:RemoteObject id="GetCpuStatusRO" destination="VMServiceDest" 
+												 result="GetCpuStatusRO_resultHandler(event)" fault="GetCpuStatusRO_faultHandler(event)"/>
+							</fx:Declarations>
+							
+							<mx:ProgressBar id="bar" labelPlacement="bottom" color="black" label="" click="bar_clickHandler(event)" 
+											minimum="0" visible="true" maximum="100" creationComplete="bar_creationCompleteHandler(event)"
+											direction="right" width="100%" height="100%" mode="manual" />
+							
+							<!-- <mx:Button id="button" label="测试" click="button_clickHandler(event)"/> -->
+								
+						</mx:HBox>
+					</fx:Component>
+				</mx:itemRenderer>
+			</mx:AdvancedDataGridColumn>
+			<mx:AdvancedDataGridColumn dataField="mem_status" headerText="内存" textAlign="center" width="80">
+				<mx:itemRenderer>
+					<fx:Component>
+						
+						<mx:HBox horizontalGap="1" >
+							
+							<fx:Script>
+								<![CDATA[
+									import flash.events.TimerEvent;
+									import flash.utils.Timer;
+									
+									import flashx.textLayout.formats.Float;
+									
+									import mx.events.FlexEvent;
+									import mx.rpc.events.FaultEvent;
+									import mx.rpc.events.ResultEvent;
+									
+									private const TIMER_INTERVAL:int = 5000; //每隔多少时间刷新数据
+									private var t:Timer;
+									
+									protected function bar_creationCompleteHandler(event:FlexEvent):void
+									{
+										t = new Timer(TIMER_INTERVAL);
+										t.addEventListener(TimerEvent.TIMER,updateTimer);
+										t.start();
+									}
+									
+									private function updateTimer(evt:TimerEvent):void{
+										if(null == data)
+											return;
+										var strVmId:String = data.strVmId;
+										bar.setProgress(30 , 100);
+//										GetMemStatusRO.getMemUsage(strVmId);
+									}
+									override public function set data(value:Object):void{
+										super.data = value;
+									}
+									
+									protected function bar_clickHandler(event:MouseEvent):void
+									{
+										
+									}
+
+									protected function GetMemStatusRO_resultHandler(event:ResultEvent):void
+									{
+										var memUsage:Number = event.result as Number;
+										bar.setProgress(memUsage , 100);
+									}
+
+
+									protected function GetMemStatusRO_faultHandler(event:FaultEvent):void
+									{
+//										trace("mem error" + event.fault);
+									}
+
+								]]>
+							</fx:Script>
+							<fx:Declarations>
+								<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+								<mx:RemoteObject id="GetMemStatusRO" destination="VMServiceDest" 
+												 result="GetMemStatusRO_resultHandler(event)" fault="GetMemStatusRO_faultHandler(event)"/>
+							</fx:Declarations>
+							<mx:ProgressBar id="bar" labelPlacement="bottom" color="black" label="" click="bar_clickHandler(event)" 
+											minimum="0" visible="true" maximum="100" creationComplete="bar_creationCompleteHandler(event)"
+											direction="right" width="100%" height="100%" mode="manual" />
+						</mx:HBox>
+					</fx:Component>
+				</mx:itemRenderer>
+			</mx:AdvancedDataGridColumn>
+			<mx:AdvancedDataGridColumn dataField="storage_status" headerText="存储" textAlign="center" width="80">
+				<mx:itemRenderer>
+					<fx:Component>
+						<mx:HBox horizontalGap="1" >
+							
+							<fx:Script>
+								<![CDATA[
+									import flash.events.TimerEvent;
+									import flash.utils.Timer;
+									
+									import mx.events.FlexEvent;
+									
+									private const TIMER_INTERVAL:int = 5000; //每隔多少时间刷新数据
+									private var t:Timer;
+									private var iCount:int = 0;
+									
+									protected function bar_creationCompleteHandler(event:FlexEvent):void
+									{
+										t = new Timer(TIMER_INTERVAL);
+										t.addEventListener(TimerEvent.TIMER,updateTimer);
+										t.start();
+									}
+									
+									private function updateTimer(evt:TimerEvent):void{
+										if(null == data)
+											return;
+										var str:String = data.strVmId + "";
+										iCount = (iCount + 10)%100;
+										bar.setProgress(10,100);
+									}
+									override public function set data(value:Object):void{
+										super.data = value;
+									}
+									
+									protected function bar_clickHandler(event:MouseEvent):void
+									{
+										
+									}
+								]]>
+							</fx:Script>
+							<mx:ProgressBar id="bar" labelPlacement="bottom" color="black" label="" click="bar_clickHandler(event)" 
+											minimum="0" visible="true" maximum="100" creationComplete="bar_creationCompleteHandler(event)"
+											direction="right" width="100%" height="100%" mode="manual" />
+						</mx:HBox>
+					</fx:Component>
+				</mx:itemRenderer>
+			</mx:AdvancedDataGridColumn>
+			<mx:AdvancedDataGridColumn dataField="operation" headerText="操作" textAlign="center" width="300">
+				<mx:itemRenderer>
+					<fx:Component>
+						<mx:HBox  horizontalGap="1" creationComplete="hbox1_creationCompleteHandler(event)">
+
+							<fx:Script>
+								<![CDATA[
+									import lab.events.VmOperationEvent;
+									import lab.valueObject.VmActions;
+									import lab.valueObject.VmStatus;
+									
+									import mx.controls.Alert;
+									import mx.events.CloseEvent;
+									import mx.events.FlexEvent;
+									
+									private const TIMER_INTERVAL:int = 5000; //每隔多少时间刷新数据
+									private var t:Timer;
+
+									protected function hbox1_creationCompleteHandler(event:FlexEvent):void
+									{
+										t = new Timer(TIMER_INTERVAL);
+										t.addEventListener(TimerEvent.TIMER,updateTimer);
+										t.start();
+									}
+									
+									private function updateTimer(evt:TimerEvent):void{
+										if(null == data)
+											return;
+										var strVmStatus:String = data.vm_status;
+										if(strVmStatus == VmStatus.RUNN)
+										{
+											lbtnShutdown.enabled = true;
+											btn_vncConnect.enabled = true;
+											btn_webssh.enabled = true;
+										}
+										//如果虚拟机不是正在运行，则应该不能进行关机、vnc、webssh等操作。
+										else if(strVmStatus != VmStatus.RUNN)
+										{
+											lbtnShutdown.enabled = false;
+											btn_vncConnect.enabled = false;
+											btn_webssh.enabled = false;
+										}
+										
+									}
+									protected function lbtnStart_clickHandler(event:MouseEvent):void
+									{
+										
+										var strVmStatus:String = data.vm_status;
+										var strVmId:String = data.strVmId;
+										
+										if(strVmStatus == VmStatus.RUNN)
+										{
+											Alert.show('虚拟机正在运行，确认要重启吗?', '提示', 1 | 2, this, vmRebootHandler);
+										}
+										else if(strVmStatus == VmStatus.POFF)
+										{
+											var vmOperationEvent:VmOperationEvent = 
+												new VmOperationEvent(VmActions.RESTART,strVmId);
+											vmOperationEvent.dispatch();
+										}
+										
+									}
+									
+									public function vmRebootHandler(event:CloseEvent):void
+									{
+										if (event.detail == Alert.YES)
+										{
+											var strVmId:String = data.strVmId;
+											var vmOperationEvent:VmOperationEvent = 
+												new VmOperationEvent(VmActions.REBOOT,strVmId);
+											vmOperationEvent.dispatch();
+										}
+									}
+
+								]]>
+							</fx:Script>
+							<mx:LinkButton id="lbtnStart" label="开机/重启" click="lbtnStart_clickHandler(event)"/>
+							<mx:LinkButton id="lbtnShutdown" label="关机" click="outerDocument.btnShotDown_clickHandler(event)"  />
+							<mx:LinkButton  id="btn_vncConnect" label="VNC连接" click="outerDocument.btnVncCon_clickHandler(event)" />
+							<mx:LinkButton id="btn_webssh" label="webssh连接" click="outerDocument.btnwebssh_clickHandler(event)" />
+							<!--
+							<mx:LinkButton label="删除" id="btnDelete" click="outerDocument.btnDelete_clickHandler(event)" />
+							<mx:LinkButton id="test" label="test" click="test_clickHandler(event)"/>
+							-->
+							
+						</mx:HBox>
+						
+					</fx:Component>
+				</mx:itemRenderer>
+			</mx:AdvancedDataGridColumn>
+			
+		</local:columns>
+		
+	</local:AdvancedDataGrid>
+	
+	
+	<!--
+	<mx:Panel width="100%" height="20%" >
+		<mx:Form>
+			<mx:FormHeading label="虚拟机详细信息"/>
+			<mx:FormItem label="ID号：" >
+				<mx:Text text="67"/>
+			</mx:FormItem>
+			
+			<mx:FormItem label="虚拟机名称：" >
+				<mx:Text text="one-74"/>
+			</mx:FormItem>
+			
+			<mx:FormItem label="拥有者：" >
+				<mx:Text text="root"/>
+			</mx:FormItem>
+			
+			<mx:FormItem label="组别：" >
+				<mx:Text text="oneadmin"/>
+			</mx:FormItem>
+			
+			<mx:FormItem label="操作系统版本：" >
+				<mx:Text text="Debian6.0"/>
+			</mx:FormItem>
+			
+			<mx:FormItem label="IP地址：" >
+				<mx:Text text="192.168.0.136"/>
+			</mx:FormItem>
+			<mx:FormItem label="CPU数量：" >
+				<mx:Text text="1"/>
+			</mx:FormItem>
+			
+			<mx:FormItem label="内存大小：" >
+				<mx:Text text="128M"/>
+			</mx:FormItem>
+			
+			<mx:FormItem label="IP地址：" >
+			<mx:Text text="{modelLocator.selectedOrder.region}"/>
+			</mx:FormItem>
+		</mx:Form>
+	</mx:Panel>
+	-->
+	
+</s:NavigatorContent>

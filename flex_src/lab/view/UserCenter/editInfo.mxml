@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%"
+		   creationComplete="init(event)">
+
+	<mx:Script>
+		<![CDATA[
+			import lab.model.DCModelLocator;
+			import lab.valueObject.User;
+			
+			import mx.controls.Alert;
+			import mx.events.FlexEvent;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.validators.Validator;
+			
+			[Bindable]
+			private var dcModelLocator:DCModelLocator = DCModelLocator.getInstance();
+			
+			private var m_strUserRole:String = "普通用户";
+			private var m_strBalance:String = dcModelLocator.m_user.iAccountBalance as String;
+			private const ADMIN:int = 1 ;
+			private const MIN_USER_NAME_LENGTH:int = 6;
+			private var m_strChangePasswdUrl:String = "http://zuinfo.zju.edu.cn/userupdatepwdoutside.do";
+			
+			protected function init(event:FlexEvent):void
+			{
+				var iUserRole:int = dcModelLocator.m_user.iUserRole;
+				if(iUserRole == ADMIN)
+					m_strUserRole = "管理员";
+			}
+			
+			protected function btnCancel_clickHandler(event:MouseEvent):void
+			{
+				var errors:Array = Validator.validateAll(validators);
+				var bRes:Boolean = isLegal(textUserName.text);
+				if(errors.length > 0 || bRes == false)
+				{
+					//labelErrorMsg.text = "输入有误！";
+					return;
+				}
+				updateUserInfoRO.updateUserInfo(dcModelLocator.m_user);
+			}
+
+			protected function updateUserInfoRO_resultHandler(event:ResultEvent):void
+			{
+				labelErrorMsg.text = "用户信息修改成功！";
+				trace("update results: " + event.result);
+			}
+
+			protected function updateUserInfoRO_faultHandler(event:FaultEvent):void
+			{
+				labelErrorMsg.text = "用户信息修改出错！";
+				trace("update error: " + event.fault);
+			}
+
+			/**
+			 * 判断输入的用户名是否合法（用户名由数字和字母组成，必须含有字母，且长度至少为6），若是则返回true,否则返回false
+			 * strUserName
+			 */
+			private function isLegal(strUserName:String):Boolean
+			{
+				var bRet:Boolean = false;
+				if(strUserName.length < MIN_USER_NAME_LENGTH)
+				{
+					labelUserNameMsg.text = "用户名的最小长度为6！";
+					return false;
+				}
+				//有不含字母数字或者下划线的字符，则返回false
+				for(var i:int=0; i<strUserName.length; i++)
+					if(!(
+						((strUserName.charAt(i)>='a') && (strUserName.charAt(i)<='z'))||
+						((strUserName.charAt(i)>='A') && (strUserName.charAt(i)<='Z'))|| 
+						((strUserName.charAt(i)>='0') && (strUserName.charAt(i)<='9')) 
+					   )  )
+					{
+						labelUserNameMsg.text = "用户名中含有字母数字以外的字符！";
+						return false;
+					}
+				
+				//存在字母则bRet置为true
+				for(var j:int=0; j<strUserName.length; j++)
+					if(((strUserName.charAt(j)>='a') && (strUserName.charAt(j)<='z'))||
+						((strUserName.charAt(j)>='A') && (strUserName.charAt(j)<='Z'))
+					)
+						bRet = true;
+				if(bRet)
+				{
+					labelUserNameMsg.text = "OK！";
+					return true;
+				}
+				else
+				{
+					labelUserNameMsg.text = "用户名中必须含有字母！";
+					return false;
+				}
+			}
+	
+//			protected function btnTest_clickHandler(event:MouseEvent):void
+//			{
+//				getUserInfoRO.getUserInfo(dcModelLocator.m_user.iUserId);
+//			}
+//
+//
+//			protected function getUserInfoRO_resultHandler(event:ResultEvent):void
+//			{
+//				var strRes:String = "";
+//				var user:User = new User();
+//				user = event.result as User;
+//				strRes = "strZjuSsoUid:" + user.strUserZjuSsoUid +", strUserName:" +user.strUsername + ", Email:" + user.strUserEmail
+//				", Balance:" + user.iAccountBalance;
+//				Alert.show("Result: " + strRes);
+//			}
+
+
+			protected function textUserName_focusOutHandler(event:FocusEvent):void
+			{
+				isLegal(textUserName.text);
+			}
+
+
+			protected function btnChangePasswd_clickHandler(event:MouseEvent):void
+			{
+				var request:URLRequest = new URLRequest(m_strChangePasswdUrl);  
+				navigateToURL(request,"_self"); 
+			}
+
+
+			protected function textEmail_focusOutHandler(event:FocusEvent):void
+			{
+				var strEmail:String = textEmail.text;
+				//匹配用户email的正则表达式；
+				var emailRe:RegExp = /\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*/;
+				if(!strEmail.match(emailRe))
+				{
+					emailMsg.text = "您输入的邮箱有误！";
+				}
+				else
+				{
+					emailMsg.text = "OK!";
+				}
+			}
+
+		]]>
+	</mx:Script>
+
+	
+	<mx:Array id="validators">
+		<mx:StringValidator source="{textUserName}" property="text" required="true" minLength="6" />
+		<mx:StringValidator source="{textEmail}" property="text" required="true" minLength="1" />
+	</mx:Array>
+	
+	<mx:RemoteObject id = "updateUserInfoRO"
+					 destination = "UserServiceDest" result="updateUserInfoRO_resultHandler(event)"
+					 fault="updateUserInfoRO_faultHandler(event)"/>
+	<!--
+	<mx:RemoteObject id = "getUserInfoRO"
+					 destination = "UserServiceDest" result="getUserInfoRO_resultHandler(event)"/>
+	<mx:Button id="btnTest" label="getUserInfo" click="btnTest_clickHandler(event)"/>
+	-->
+	<mx:VBox paddingLeft="80">
+		<mx:Form id="userInfoForm" width="100%">
+			<mx:FormItem label="浙大统一认证账号：" height="50" direction="horizontal">
+				<mx:Text width="200" text="@{dcModelLocator.m_user.strUserZjuSsoUid}"/>
+				<mx:Button id="btnChangePasswd" label="修改密码" click="btnChangePasswd_clickHandler(event)"/>
+				<mx:Label text="修改密码前，请记住您的浙大统一认证账号！"/>
+			</mx:FormItem>
+			<mx:FormItem label="用户别名：" height="100">
+				<mx:TextInput id="textUserName" width="200" focusOut="textUserName_focusOutHandler(event)" 
+							  text="@{dcModelLocator.m_user.strUsername}"/>
+				<mx:Label text="长度不小于6，由数字和字母组成且必须含有字母，修改后可用该别名登录系统"/>
+				<mx:Label id="labelUserNameMsg" color="red"/>
+			</mx:FormItem>
+			
+			<mx:FormItem label="E-mail：" height="50" direction="horizontal">
+				<mx:TextInput id="textEmail" width="200" text="@{dcModelLocator.m_user.strUserEmail}"
+							  focusOut="textEmail_focusOutHandler(event)"/>
+				<mx:Label id="emailMsg" text="" color="red"/>
+			</mx:FormItem>
+			
+			<mx:FormItem label="用户类型：" height="50">
+				<mx:Text text="普通用户" />
+			</mx:FormItem>
+			
+			<mx:FormItem label="当前余额：" height="50">
+				<mx:Text text="0" />
+			</mx:FormItem>
+			<mx:FormItem label="提示：" >
+				<mx:Label id="labelErrorMsg" color="red"/>
+			</mx:FormItem>
+			
+			<mx:FormItem direction="horizontal" width="100%" paddingTop="20" paddingLeft="30">
+				<mx:Button id="btnCancel" label="保存修改" click="btnCancel_clickHandler(event)"></mx:Button>
+			</mx:FormItem>
+		</mx:Form>
+		
+	</mx:VBox>
+</mx:Canvas>

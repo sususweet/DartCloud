@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" width="400" height="300">
+
+	<fx:Script>
+		<![CDATA[
+			import mx.controls.Alert;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.utils.URLUtil; 
+			
+			[Bindable]
+			private var m_strUsername:String = new String();
+			[Bindable]
+			private var m_strPass:String = new String();
+			
+			protected function btnSub_clickHandler(event:MouseEvent):void
+			{
+				//声明一个URLRequest
+				var _request:URLRequest = new URLRequest();
+				_request.url = "http://localhost:8080/DartCloud/SessionClient";
+				//声明请求的方法
+				_request.method = URLRequestMethod.POST;
+				
+				//参数设置
+				var _values:URLVariables = new URLVariables();
+				_values.name = encodeURI(txtUsername.text);
+				_values.password = encodeURI(txtPassword.text);
+				_values.type = encodeURI("1");
+				//下面这句话若不注释掉，则会提示登录失败，为什么呢？
+				//_values.module = encodeURI("DataStore");
+				
+				//关联到request
+				_request.data = _values;
+				//声明loader
+				var _urlLoader:URLLoader = new URLLoader();
+				_urlLoader.addEventListener(Event.COMPLETE,requestLoaderHandler);
+				_urlLoader.addEventListener(IOErrorEvent.IO_ERROR,ioErrorHandler);
+				//Alert.show("ttt");
+				
+				//发送请求
+				_urlLoader.load(_request);
+			}
+			
+			/**
+			 * 请求完成的监听
+			 */
+			public function requestLoaderHandler(event:Event):void{
+				//移除这个监听
+				URLLoader(event.target).removeEventListener(Event.COMPLETE,requestLoaderHandler);
+//				var _obj:Object = URLLoader(event.target).data;
+				var lod:URLLoader = URLLoader(event.target);
+				var _obj:Object = URLUtil.stringToObject(lod.data,";",true);
+//				Alert.show("lod data: " + lod.hasOwnProperty("NAME"));
+				var strUid:String = _obj.ZJU_SSO_UID;
+				if(null != strUid)
+					Alert.show("登录成功！你好" + strUid + "!");
+				else
+					Alert.show("登录失败！");
+			}
+			
+			/**
+			 * io异常的监听
+			 */
+			public function ioErrorHandler(event:IOErrorEvent):void{
+				//Alert.show("aaaaa");
+				//移除这个监听
+				URLLoader(event.target).removeEventListener(Event.COMPLETE,requestLoaderHandler);
+				Alert.show(event.toString());
+			}
+			
+		]]>
+	</fx:Script>
+
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+	</fx:Declarations>
+	
+	
+	<mx:Form id="loginForm" color="0x323232" width="100%" height="100%">
+		<mx:FormItem label="用户名:" required="true" direction="horizontal">
+			<mx:TextInput id = "txtUsername" text="@{m_strUsername}" />
+		</mx:FormItem>
+		<mx:FormItem label="密   码:" required="true" direction="horizontal">
+			<mx:TextInput id="txtPassword" displayAsPassword="true" text="@{m_strPass}"/>
+		</mx:FormItem>
+		<mx:FormItem label="" required="true" direction="horizontal">
+			<mx:Button id="btnSub" label="提交" click="btnSub_clickHandler(event)"/>
+		</mx:FormItem>
+		<mx:FormItem label="信息:" direction="horizontal">
+			<mx:TextArea id="txtMes"  width="100%" height="100%"/>
+		</mx:FormItem>
+	</mx:Form>
+	
+</mx:Canvas>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow  xmlns:mx="http://www.adobe.com/2006/mxml" width="300" height="200"
+				 title="提示信息" showCloseButton="true" fontSize="12" close="PopUpManager.removePopUp(this);" creationComplete="initMessage()">
+	<mx:Script>
+		<![CDATA[
+			import mx.managers.PopUpManager;
+			
+			[Bindable]
+			private var message:String="";
+			//确定
+			
+			private function initMessage():void{
+				createMessage.text = message;
+				if(newBusiness_step2.getCreateSuccess()){
+					message = "业务创建失败！";
+				}
+				else{
+					message = "业务创建成功！";
+					this.dispatchEvent(new Event( 'updateUserInfo' )); 
+				}
+			}
+			
+			private function confirm2():void{
+				PopUpManager.removePopUp(this);
+			}	
+		]]>
+	</mx:Script>
+	
+	<mx:Form id="lastStep" width="100%" paddingTop="10" height="132">
+		<mx:FormItem width="100%" height="60" horizontalAlign="left">
+			<mx:Label text="{message}" id="createMessage"></mx:Label>
+		</mx:FormItem>
+		<mx:FormItem width="100%" height="35" horizontalAlign="right" paddingTop="10">
+			<mx:Button id="sure" label="确定" click="confirm2();"></mx:Button>
+		</mx:FormItem>
+	</mx:Form>
+	<mx:ControlBar></mx:ControlBar>
+</mx:TitleWindow>	

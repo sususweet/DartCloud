@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" width="100%" height="100%"  xmlns:local="dg.*"
+		 creationComplete="init(event)">
+	<fx:Script>
+		<![CDATA[
+			import dg.myadg.CheckBoxHeaderRenderer;
+			import dg.myadg.CheckBoxItemRenderer;
+			import dg.myadg.CheckboxColumn;
+			
+			import lab.valueObject.NetApply;
+			import lab.valueObject.VM;
+			
+			import mx.collections.ArrayCollection;
+			import mx.events.FlexEvent;
+			import mx.events.ListEvent;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;	
+			
+			private var columns:Array=new Array();
+			
+			protected function dgd_initializeHandler(event:FlexEvent):void
+			{
+				if (adgJobInfo.hasCheck)
+				{
+					var checkColumn:CheckboxColumn=new CheckboxColumn();
+					checkColumn.itemRenderer=new ClassFactory(CheckBoxItemRenderer);
+					checkColumn.headerRenderer=new ClassFactory(CheckBoxHeaderRenderer);
+					checkColumn.dataField="dgSelected";//"dgSelected"这一属性其他地方需要用到，不能随意乱改！
+					checkColumn.width=25;
+					columns.push(checkColumn);
+				}	
+			}
+			
+			protected function dgd_creationCompleteHandler(event:FlexEvent):void
+			{
+				if (adgJobInfo.columns.length > 0)
+				{
+					for (var j:int=0; j < adgJobInfo.columns.length; j++)
+					{
+						if (adgJobInfo.columns[j].dataField != null)
+						{
+							columns.push(adgJobInfo.columns[j]);
+						}
+					}
+				}
+				adgJobInfo.columns=columns;
+			}
+
+			protected function adgJobInfo_itemClickHandler(event:ListEvent):void
+			{
+			}
+			
+			
+			[Bindable]
+			private static var arrVmNetInfo:ArrayCollection = new ArrayCollection();
+			protected function init(event:FlexEvent):void
+			{
+				getNetStatusRO.getAllNetApplyRecords();
+			}
+			
+			protected static function getNetStatusRO_resultHandler(event:ResultEvent):void
+			{
+				arrVmNetInfo.removeAll();
+				var arrTmp:ArrayCollection = event.result as ArrayCollection;
+				var oneRecord:NetApply = new NetApply();
+				for(var i:int=0; i<arrTmp.length; i++)
+				{
+					oneRecord = arrTmp[i] as NetApply;
+					arrVmNetInfo.addItem({iRecordId:i,strVmId:oneRecord.strVmId,strVmName:oneRecord.strVmName,strJobName:oneRecord.strJobName,
+					strZoneName:oneRecord.strZoneName,strUserName:oneRecord.strUsrName,strVmIp:oneRecord.strVmIp,strNetStatus:"申请外网访问"});
+				}
+			}
+
+
+			protected function getNetStatusRO_faultHandler(event:FaultEvent):void
+			{
+			}
+
+
+
+			protected function labMsg_clickHandler(event:MouseEvent):void
+			{
+			}
+			
+			/**
+			 * 在arrVmNetInfo中查找记录标识为iRecordId的下标;
+			 * 若不存在，则返回-1.
+			 */
+			public function findIndex(iRecordId:int):int
+			{
+				var index:int = -1;
+				for(var i:int=0; i<arrVmNetInfo.length; i++)
+					if(arrVmNetInfo[i].iRecordId == iRecordId)
+						return i;
+				return index;
+			}
+			
+			/**
+			 * 删除arrVmNetInfo的下标为iIndex的元素
+			 */
+			public function deleteAnItemInArr(iRecordId:int):Boolean
+			{
+				var index:int = findIndex(iRecordId);
+				if(index == -1)//在arrVmNetInfo中没有找到相应标识的记录
+					return false;
+				else
+					arrVmNetInfo.removeItemAt(index);
+				return true;
+			}
+
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+		<mx:RemoteObject id="getNetStatusRO" destination="NetApplyServiceDest" result="getNetStatusRO_resultHandler(event)"
+						 fault="getNetStatusRO_faultHandler(event)" />
+	</fx:Declarations>
+	<mx:Label id="labMsg" text="aaaa" click="labMsg_clickHandler(event)" />
+	<local:AdvancedDataGrid id="adgJobInfo" width="100%" height="100%" sortExpertMode="true"
+							hasCheck="true" initialize="dgd_initializeHandler(event)" dataProvider="{arrVmNetInfo}"
+							creationComplete="dgd_creationCompleteHandler(event)" sortableColumns="false" itemClick="adgJobInfo_itemClickHandler(event)">
+		<local:columns>
+			<mx:AdvancedDataGridColumn dataField="strVmName" headerText="虚拟机名称" textAlign="center" width="80"/>
+			<mx:AdvancedDataGridColumn dataField="strJobName" headerText="所属业务" textAlign="center" width="80"/>
+			<mx:AdvancedDataGridColumn dataField="strZoneName" headerText="所属数据中心" textAlign="center" width="80"/>
+			<mx:AdvancedDataGridColumn dataField="strVmIp" headerText="虚拟机IP" textAlign="center" width="80"/>
+			<mx:AdvancedDataGridColumn dataField="strNetStatus" headerText="网络状态" textAlign="center" width="80"/>
+			<mx:AdvancedDataGridColumn dataField="operation" headerText="操作" textAlign="center" width="300">
+				<mx:itemRenderer>
+					<fx:Component>
+						<mx:HBox  horizontalGap="1" >
+							
+							<fx:Script>
+								<![CDATA[
+									import lab.valueObject.VMNetStatus;
+									
+									import mx.collections.ArrayCollection;
+									import mx.rpc.events.FaultEvent;
+									import mx.rpc.events.ResultEvent;
+									import mx.controls.Alert;
+									protected function btnAccepted_clickHandler(event:MouseEvent):void
+									{
+										updataNetStatus(VMNetStatus.PUBLIC);
+									}
+									protected function btnReject_clickHandler(event:MouseEvent):void
+									{
+										updataNetStatus(VMNetStatus.LOCAL);
+									}
+									
+									protected function acceptAnRequestRO_resultHandler(event:ResultEvent):void
+									{
+										Alert.show("已处理！","提示");
+										deleteAnItem();
+									}
+
+
+									protected function acceptAnRequestRO_faultHandler(event:FaultEvent):void
+									{
+										Alert.show("出错啦！" + event.fault.toString(),"错误");
+									}
+									
+									protected function rejectAnRequestRO_resultHandler(event:ResultEvent):void
+									{
+										Alert.show("已处理！","提示");
+										deleteAnItem();
+									}
+									
+									
+									protected function rejectAnRequestRO_faultHandler(event:FaultEvent):void
+									{
+										Alert.show("出错啦！" + event.fault.toString(),"错误");
+									}
+									
+									protected function updataNetStatus(newStatus:int):void
+									{
+										if(null == data)
+											return ;
+										var strVmId:String = data.strVmId;
+										var arrVmId:ArrayCollection = new ArrayCollection();
+										arrVmId.addItem(strVmId);
+										acceptAnRequestRO.updateVmNetStatus(arrVmId,newStatus);
+									}
+									
+									protected function deleteAnItem():void
+									{
+										if(null == data)
+											return;
+										var iIndex:int = data.iRecordId;
+										outerDocument.deleteAnItemInArr(iIndex);
+									}
+
+								]]>
+							</fx:Script>
+							
+							<fx:Declarations>
+								<mx:RemoteObject id="acceptAnRequestRO" destination="NetApplyServiceDest" result="acceptAnRequestRO_resultHandler(event)" 
+												 fault="acceptAnRequestRO_faultHandler(event)"/>
+								<mx:RemoteObject id="rejectAnRequestRO" destination="NetApplyServiceDest" result="rejectAnRequestRO_resultHandler(event)"
+												 fault="rejectAnRequestRO_faultHandler(event)"/>
+							</fx:Declarations>
+							
+							<mx:LinkButton id="btnAccepted" label="通过" click="btnAccepted_clickHandler(event)"/>
+							<mx:LinkButton id="btnReject" label="拒绝" click="btnReject_clickHandler(event)"/>
+							
+						</mx:HBox>
+					</fx:Component>
+				</mx:itemRenderer>
+			</mx:AdvancedDataGridColumn>
+	
+		</local:columns>
+	</local:AdvancedDataGrid>		 
+	
+</mx:Canvas>

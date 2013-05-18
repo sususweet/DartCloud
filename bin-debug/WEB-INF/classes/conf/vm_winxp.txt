@@ -1,0 +1,31 @@
+CPU=1
+VCPU=<vm_vcpu_num>
+MEMORY=<vm_memory_size>
+NAME=ubuntu12.04-<vm_name>
+DISK = [
+    image_id=<image_id>,
+    target = xvda,
+    driver = "file:",
+    clone  = "no",
+    readonly = "no"
+]
+OS  = [
+    BOOTLOADER=/usr/bin/pygrub,
+    ROOT    = "xvda"
+]
+NIC = [
+    NETWORK = Cloud
+]
+CONTEXT = [
+	driver="file:",
+    hostname   	= "$NAME",
+    ip         	= "$NIC[IP]",
+    pass	   	= "<pass>",
+    jobid		= "<jobid>",
+    nfsserver	="<nfsserver>",
+    netmask             ="$NETWORK[NETWORK_MASK,NETWORK_ID=1]",
+    dns                 ="$NETWORK[DNS,NETWORK_ID=1]",
+    network             ="$NETWORK[NETWORK,NETWORK_ID=1]",
+    files      	= "/image-pool/template/vm/init.d/init.sh /image-pool/template/vm/init.d/ipchange.sh /image-pool/template/vm/init.d/id_rsa.pub",
+    target     	= "xvdb"
+]

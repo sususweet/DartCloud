@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" xmlns:loginView="lab.view.login.*" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" 
+		 xmlns:view="lab.view.*" width="100%" height="100%" currentState="login">
+	
+	<fx:Script>
+		<![CDATA[
+			import lab.events.UserLoginSuccess;
+			
+			protected function userlogin_registerHandler(event:Event):void
+			{
+				this.currentState = "register";
+			}
+			
+			protected function userregister_go2LoginHandler(event:Event):void
+			{
+				this.currentState = "login";
+			}
+			
+			protected function mainFrame_logoutHandler(event:Event):void
+			{
+				this.currentState = "login";
+			}
+
+		]]>
+	</fx:Script>
+	
+	<s:states>
+		<s:State name="login"/>
+		<s:State name="register"/>
+		<s:State name="indexView"/>
+	</s:states>
+	
+	<!-- 中间内容 -->
+	<mx:VBox width="100%" height="100%" minWidth="900" paddingLeft="0" paddingRight="0" paddingTop="0" paddingBottom="0">
+		<mx:Canvas width="100%" height="100%">
+			<mx:Image source="@Embed(source='assets/imgs/background.png')" width="100%" height="100%" maintainAspectRatio="false"/>
+			<mx:HBox width="100%" height="100%" paddingLeft="300" paddingRight="0" paddingTop="100" paddingBottom="0" borderStyle="none"
+					 includeIn="login">
+				<loginView:userlogin id="userlogin" register="userlogin_registerHandler(event)" >
+				</loginView:userlogin >
+			</mx:HBox>
+			
+			<mx:HBox width="100%" height="100%" paddingLeft="300" paddingRight="100" paddingTop="0" paddingBottom="0" borderStyle="none"
+					 includeIn="register" >
+				<loginView:userregister id="userregister" go2Login="userregister_go2LoginHandler(event)">
+				</loginView:userregister>
+			</mx:HBox>
+		</mx:Canvas>
+		
+	</mx:VBox>
+	
+	
+	
+</s:Group>

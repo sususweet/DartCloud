@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<conf>
+<!-- 
+<HTTPService id="loadResTreeService" url="http://dart.com:8088/GFMonitor2/UserCheck"/>
+	<HTTPService id="loadMonitorDataService" url="http://dart.com:8088/GFMonitor2/HelloWorld"/>
+	<HTTPService id="loadWebServcieMonitorDataService" url="http://dart.com:8088/GFMonitor2/WSMonitor"/>
+-->
+
+	<HTTPService id="loadResTreeService" url="data/ResourceMonitor/computingresource.xml"/>
+	<HTTPService id="loadMonitorDataService" url="data/data.xml"/>
+	<HTTPService id="loadWebServcieMonitorDataService" url=""/>
+	<HTTPService id="getResourceTasksService" url="data/resourceTasks.xml"/>
+	<HTTPService id="loadOrderListService" url="data/orderList.xml"/>
+	<HTTPService id="getAllOrderProgressService" url="data/allOrderProgress.xml"/>
+	<HTTPService id="getFlowResourceService" url="data/flowResource.xml"/>
+	<HTTPService id="loadFlowTemplatesInfoService" url="data/flowTemplates.xml"/>
+	<HTTPService id="getOrderFlowProgressService" url="data/orderFlowProgress.xml"/>
+	<HTTPService id="loadNodesInfoService" url="data/nodes.xml"/>
+	<HTTPService id="loadResourcesInfoService" url="data/resources.xml"/>
+	<Crossdomain id="crossdomain" url="data/crossdomain.xml"/>
+	<errormessage></errormessage>
+
+
+
+
+</conf>

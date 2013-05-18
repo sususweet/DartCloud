@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!--
+*	id: 资源id, resourcename: 资源名称, type: 资源类型(0-计算资源, 1-存储资源, 2-网络资源)
+*	对于计算资源 nodeid: 节点id, cpu: cpu信息, mem: 内存信息
+*	对于网络资源 bandwidth: 带宽
+-->
+<res>
+	<item id='1' resourcename='管控集群1' nodeid='1' type='0' description='xxx' publisherID='1' publishDate='2010/12/21 14:30' cpu='240GHz' mem='23.53GB'/>
+	<item id='2' resourcename='接收集群1' nodeid='2' type='0' description='xxx' publisherID='1' publishDate='2010/12/21 14:30' cpu='240GHz' mem='23.53GB'/>
+	<item id='3' resourcename='处理集群1' nodeid='3' type='0' description='xxx' publisherID='1' publishDate='2010/12/21 14:30' cpu='240GHz' mem='23.53GB'/>
+	<item id='4' resourcename='应用集群1' nodeid='4' type='0' description='xxx' publisherID='1' publishDate='2010/12/21 14:30' cpu='240GHz' mem='23.53GB'/>
+	<item id='5' resourcename='网络1' type='2' description='xxx' publisherID='1' publishDate='2010/12/21 14:30' bandwidth='8'/>
+	<item id='6' resourcename='网络2' type='2' description='xxx' publisherID='1' publishDate='2010/12/21 14:30' bandwidth='8'/>
+	<item id='7' resourcename='网络3' type='2' description='xxx' publisherID='1' publishDate='2010/12/21 14:30' bandwidth='8'/>
+	<errormessage></errormessage>
+</res>

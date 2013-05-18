@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" paddingTop="20" paddingBottom="20" paddingRight="20" paddingLeft="20"
+		 xmlns:flexlib="http://code.google.com/p/flexlib/" xmlns:BusinessManagement="lab.view.BusinessManagement.*"
+		 xmlns:view="lab.view.*" creationComplete="init(event)" xmlns:valueObjects="valueObjects.*" >
+	
+	<mx:Script>
+		<![CDATA[
+			import lab.events.DeleteOneJobEvent;
+			import lab.model.DCModelLocator;
+			import lab.util.UtilFunc;
+			import lab.valueObject.Job;
+			import lab.valueObject.User;
+			import lab.valueObject.VM;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.XMLListCollection;
+			import mx.containers.TitleWindow;
+			import mx.controls.Alert;
+			import mx.controls.Image;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.events.ListEvent;
+			import mx.managers.PopUpManager;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			
+			
+			//单例，全局变量；程序运行时可能用到的一些配置信息。
+			[Bindable]
+			private var dcModelLocator:DCModelLocator = DCModelLocator.getInstance();
+			
+			
+			private var step_one:TitleWindow;
+			
+			protected function init(event:FlexEvent):void
+			{
+			}
+			
+			
+			//显示新建业务第一步
+			public function showTitleWindow():void
+			{
+				//popup:弹出窗口
+				step_one = PopUpManager.createPopUp(this, newBusiness_step1, true) as TitleWindow;
+				//使弹出框居中
+				PopUpManager.centerPopUp(step_one);
+			}
+			
+			
+			/**
+			 * 当点击不同的业务名称时，主列表上应该显示该业务下相应的虚拟机信息。
+			 * 即需要更新selectedVmInfoAC数组。
+			 * 
+			 */
+			protected function jobInfoTree_changeHandler(event:ListEvent):void
+			{
+				UtilFunc.jobInfoTree_changeHandler(event);
+//				if( dcModelLocator.userJobInfoAC.length == 0 )
+//				{
+//					Alert.show("无业务信息！", '提示');
+//					return;
+//				}	
+//				var selectedNode:XML = Tree(event.target).selectedItem as XML;
+//				
+//				var strSelectedLabel:String = selectedNode.@label;
+//				var selType:int = selectedNode.@type;
+//				var selectedIndex:int = selectedNode.@id;
+//				var tmpJob:Job = new Job();
+//				
+//				if(selType == 0)//选择根节点
+//				{
+//					dcModelLocator.selectedVmInfoAC = UtilFunc.getAllVmInfo(dcModelLocator.userJobInfoAC);
+//					dcModelLocator.curSelectedJob = null; 
+//				}
+//				else if(selType == 1)//选择业务
+//				{
+//					tmpJob = dcModelLocator.userJobInfoAC[selectedIndex] as Job;
+//					dcModelLocator.selectedVmInfoAC = UtilFunc.getOneJobVmInfo(tmpJob);
+//					dcModelLocator.curSelectedJob = tmpJob; 
+//				}
+//				else if(selType ==2)//选择虚拟机
+//				{
+//					var vmIndex:int = selectedIndex % 1000;
+//					var jobIndex:int = selectedIndex / 1000;
+//					tmpJob = dcModelLocator.userJobInfoAC[jobIndex] as Job;
+//					var oneVmInfo:VM = new VM();
+//					oneVmInfo = tmpJob.vmArrayInfo[vmIndex] as VM;
+//					
+//					var retArr:ArrayCollection = new ArrayCollection();
+//					retArr.addItem(UtilFunc.getOneVmInfo(oneVmInfo, tmpJob));
+//					dcModelLocator.selectedVmInfoAC  = retArr;
+//				}
+				
+			}
+			
+			//获取虚拟机监控信息时，需要传入一个虚拟机名称的列表。
+			private function getVmName(arrVmInfo:ArrayCollection):ArrayCollection
+			{
+				var arrVmName:ArrayCollection = new ArrayCollection();
+				for(var i:int=0; i<arrVmInfo.length; i++)
+				{
+					arrVmName.addItem(arrVmInfo[i].strVmName);
+				}
+				return arrVmName;
+			}
+			
+			//删除业务的响应函数
+			protected function btnDeleteJob_deleteHandle(event:MouseEvent):void
+			{
+				var selectedNode:XML = jobInfoTree.selectedItem as XML;
+				if(null == selectedNode)
+				{
+					Alert.show("请选择要删除的业务！",'提示');
+				}
+				else
+				{
+					Alert.yesLabel='是';
+					Alert.noLabel='否';
+					Alert.show('确认要删除吗?', '提示', 1 | 2, this, deleteHandler);
+				}
+			}
+			
+			//点击删除按钮时的响应函数。
+			public function deleteHandler(event:CloseEvent):void
+			{
+				var selectedNode:XML = jobInfoTree.selectedItem as XML;
+				
+				if (event.detail == Alert.YES)
+				{
+					var selectedIndex:int = selectedNode.@id;
+					var strSelectedLabel:String = selectedNode.@label;
+					var tmpJob:Job = dcModelLocator.userJobInfoAC[selectedIndex] as Job;
+					
+					//在事件链中添加删除业务事件。
+					var deleteOneJobEvent:DeleteOneJobEvent = new DeleteOneJobEvent(tmpJob);
+					deleteOneJobEvent.dispatch();
+				}
+			}
+			
+			[Bindable]
+			[Embed("assets/myicon/earth.png")]
+			private var dataCenterIcon:Class;
+			
+			[Bindable]
+			[Embed("assets/myicon/folder.png")]
+			private var clusterIcon:Class;
+			
+			[Bindable]
+			[Embed("assets/myicon/db.png")]
+			private var nodeIcon:Class;
+			
+			
+			private function tree_iconFunc(item:Object):Class {
+				var iconClass:Class;
+				switch (XML(item).localName()) {
+					case "dataCenter":
+						iconClass = dataCenterIcon;
+						
+						break;
+					case "cluster":
+						iconClass = clusterIcon;
+						break;
+					case "node":
+						iconClass = nodeIcon;
+						break;
+				}
+				return iconClass;
+			}
+
+		]]>
+	</mx:Script>
+	
+	
+	
+	<mx:VBox width="15%" height="100%">
+		<mx:Button width="100%" label="新建业务" click="showTitleWindow()"></mx:Button>
+		<mx:Button id="btnDeleteJob" width="100%" label="删除业务" click="btnDeleteJob_deleteHandle(event)"></mx:Button>
+		<mx:Tree id="jobInfoTree" width="100%" height="100%" 
+				 labelField="@label"  showRoot="true" dataProvider="{dcModelLocator.JobInfoXMLList}"
+				 change="jobInfoTree_changeHandler(event)" />
+	</mx:VBox>
+	
+	<mx:ViewStack id="viewStack" width="85%" height="100%" selectedIndex="0" borderStyle="solid">
+		<BusinessManagement:businessInfo id="businessInfo" />
+	</mx:ViewStack>
+</mx:HBox>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

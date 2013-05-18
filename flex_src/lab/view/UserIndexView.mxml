@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:control="lab.control.*"
+		 xmlns:view="lab.view.*" xmlns:business="lab.business.*"
+		 width="100%" height="100%" creationComplete="initIndexView(event)">
+	
+	<fx:Script>
+		<![CDATA[
+			import lab.events.UserLoginSuccess;
+			import lab.model.DCModelLocator;
+			import mx.controls.Alert;
+			import mx.events.FlexEvent;
+			
+			[Bindable]
+			private var dcModelLocator:DCModelLocator = DCModelLocator.getInstance();
+			
+			protected function initIndexView(event:FlexEvent):void
+			{
+				trace("debuging...");
+				var so:SharedObject = SharedObject.getLocal("validate","/");
+				var valid:Boolean = so.data.validateResult;
+				var strLoginUrl:String = "http://dartcloud.zju.edu.cn/DartCloud/DartCloud.html" ;
+				var request:URLRequest;
+				
+				if( valid != true ){
+					so.clear();
+					Alert.show("本地cookie信息加载失败...，页面跳转中...");
+					//跳转到登陆页面
+					request = new URLRequest(strLoginUrl);  
+					navigateToURL(request,"_self"); 
+					return;
+				}
+				else{
+					var iUserId:int = so.data.iUserId;
+					
+					//trace("该用户的iUserId = " + iUserId);
+					
+					//登录不成功时，所获取的iUserId；参见UserService.java中的getUserId函数。
+					var iUnvalid_userId:int = -1;
+					
+					if(iUnvalid_userId == iUserId)//登录不成功，或者未登录,跳转到登录页面。
+					{
+						Alert.show("登录出现异常...，页面跳转中...");
+						request = new URLRequest(strLoginUrl);  
+						navigateToURL(request,"_self"); 
+						return;
+					}
+					dcModelLocator.m_user.iUserId = iUserId;
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+		<control:DCController/>
+		<business:Services/>
+	</fx:Declarations>
+	
+	
+	<!-- 中间内容   -->
+	<mx:VBox width="100%" height="115%" minWidth="900" paddingLeft="0" paddingRight="0" paddingTop="0" paddingBottom="0">
+		<mx:Canvas width="100%" height="100%">
+			<mx:Image source="@Embed(source='assets/imgs/background.png')" width="100%" height="100%" maintainAspectRatio="false"/>
+			
+			<mx:HBox width="100%" height="100%" paddingLeft="10" paddingRight="0" paddingTop="0" paddingBottom="0" borderStyle="none">
+				<view:MainFrame id="mainFrame" >
+				</view:MainFrame>
+			</mx:HBox>
+		</mx:Canvas>
+	</mx:VBox>
+</s:Group>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rds:ServiceLocator xmlns:rds="com.adobe.cairngorm.business.*" xmlns:mx="http://www.adobe.com/2006/mxml">
+<mx:HTTPService id="loadConfigureService" url="conf/serviceConf.xml" useProxy="false" resultFormat="e4x" showBusyCursor="true" method="POST"/>
+<!--
+	<mx:HTTPService id="loadTreeArchService" url="http://10.214.0.148:8080/co/treeConfig.action" useProxy="false" resultFormat="e4x" showBusyCursor="true" method="POST"/
+	http://192.168.1.238:8088/GFMonitor2/UserCheck
+<mx:HTTPService id="loadResTreeService" url="data/ResourceMonitor/computingresource.xml" useProxy="false" resultFormat="e4x" showBusyCursor="true" method="POST"/>
+	////////////////////////////
+	
+	<mx:HTTPService id="getOrderFlowProgressService" url="data/orderFlowProgress.xml" useProxy="false" resultFormat="e4x" showBusyCursor="false" method="POST"/>
+	<mx:HTTPService id="loadNodesInfoService" url="data/nodes.xml" useProxy="false" resultFormat="e4x" showBusyCursor="true" method="POST"/>
+	<mx:HTTPService id="loadResourcesInfoService" url="data/resources.xml" useProxy="false" resultFormat="e4x" showBusyCursor="true" method="POST"/>
+	<mx:HTTPService id="loadMapColorService" url="data/mapColor.xml" useProxy="false" resultFormat="e4x" showBusyCursor="true" method="POST"/>
+	<mx:HTTPService id="loadResTreeService" url="" useProxy="false" resultFormat="e4x" showBusyCursor="true" method="POST"/>
+	<mx:HTTPService id="loadMonitorDataService" url="" useProxy="false" resultFormat="e4x" showBusyCursor="true" method="POST"/>
+	<mx:HTTPService id="loadWebServcieMonitorDataService" url="" useProxy="false" resultFormat="e4x" showBusyCursor="true" method="POST"/>
+	<mx:HTTPService id="getResourceTasksService" url="data/resourceTasks.xml" useProxy="false" resultFormat="e4x" showBusyCursor="true" method="POST"/>
+	<mx:HTTPService id="loadOrderListService" url="data/orderList.xml" useProxy="false" resultFormat="e4x" showBusyCursor="true" method="POST"/>
+	<mx:HTTPService id="getAllOrderProgressService" url="data/allOrderProgress.xml" useProxy="false" resultFormat="e4x" showBusyCursor="false" method="POST"/>
+	<mx:HTTPService id="getFlowResourceService" url="data/flowResource.xml" useProxy="false" resultFormat="e4x" showBusyCursor="true" method="POST"/>
+	<mx:HTTPService id="loadFlowTemplatesInfoService" url="data/flowTemplates.xml" useProxy="false" resultFormat="e4x" showBusyCursor="true" method="POST"/>
+	
+	-->
+	
+
+<!--Remote Object -->
+	
+	
+	
+	
+	
+	
+	
+<mx:RemoteObject id="JobServiceRO" destination="JobServiceDest"/>
+<mx:RemoteObject id="deleteJobRo" destination="JobOperationDest"/>
+<mx:RemoteObject id="VmOperationRO" destination="VmOperationDest" />
+<mx:RemoteObject id="JobOperationRO" destination="JobOperationDest" />
+<mx:RemoteObject id="UserServiceRO" destination="UserServiceDest"/>
+
+<!--
+<mx:HTTPService id="loadMonitorDataService" url="data/data.xml" useProxy="false" resultFormat="e4x" showBusyCursor="true" method="POST"/>
+-->
+</rds:ServiceLocator>
+
+

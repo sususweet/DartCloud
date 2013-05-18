@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!--
+*	id: 节点id, nodename: 节点名称
+-->
+<res>
+	<item id='1' nodename='管控中心'/>
+	<item id='2' nodename='接收中心'/>
+	<item id='3' nodename='处理中心'/>
+	<item id='4' nodename='应用技术中心'/>
+	<errormessage></errormessage>
+</res>

@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!--
+*	id: 订单id, total: 预计总时间, remain: 剩余时间
+-->
+<root>
+	<item id='0' total='110' remain='80'/>
+	<item id='1' total='102' remain='63'/>
+	<item id='2' total='102' remain='43'/>
+	<item id='3' total='102' remain='33'/>
+	<item id='4' total='102' remain='23'/>
+	<item id='5' total='102' remain='13'/>
+	<item id='6' total='102' remain='3'/>
+	<item id='7' total='102' remain='3'/>
+	<item id='8' total='102' remain='0'/>
+	<errormessage></errormessage>
+</root>

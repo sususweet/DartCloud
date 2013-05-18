@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<service id="remoting-service" 
+    class="flex.messaging.services.RemotingService">
+
+    <adapters>
+        <adapter-definition id="java-object" class="flex.messaging.services.remoting.adapters.JavaAdapter" default="true"/>
+    </adapters>
+
+    <default-channels>
+        <channel ref="my-amf"/>
+    </default-channels>
+    
+
+    <destination id="UploadFileListDest">
+    	<properties>
+			<source>com.cloud.BusinessManagement.UploadFileList</source>
+		</properties>
+	</destination>
+
+    <destination id="DownlodDest">
+		<properties>
+			<source>com.cloud.BusinessManagement.DownloadFileList</source>
+		</properties>
+	</destination>
+    
+    <destination id="LoginDest">
+   		 <properties>
+	        <source>com.cloud.login.Login</source>
+	    </properties>
+	</destination>
+	
+    
+     <destination id="UserServiceDest">
+   		 <properties>
+	        <source>com.cloud.dao.UserService</source>
+	    </properties>
+	</destination>
+    
+    <destination id="JobServiceDest">
+   		 <properties>
+	        <source>com.cloud.dao.JobService</source>
+	    </properties>
+	</destination>
+	
+	<destination id="JobOperationDest">
+   		 <properties>
+	        <source>com.cloud.jobManagement.JobOperation</source>
+	    </properties>
+	</destination>
+	
+	<destination id="VmOperationDest">
+   		 <properties>
+	        <source>com.cloud.jobManagement.VmOperation</source>
+	    </properties>
+	</destination>
+	
+	<destination id="resMonitorDest">
+		<properties>
+			<source>com.cloud.resourceMonitor.VMMonitor</source>
+		</properties>
+	</destination>
+	
+	<destination id="VMServiceDest">
+		<properties>
+			<source>com.cloud.resourceMonitor.VMService</source>
+		</properties>
+	</destination>
+	
+	<destination id="StatisticDataFetch">
+   		 <properties>
+	        <source>com.cloud.resourceStatistic.DataFetch</source>
+	    </properties>
+	</destination>
+	
+	<destination id="VMCPUDataFetchDest">
+		<properties>
+			<source>com.cloud.resourceStatistic.VMCPUDataFetch</source>
+		</properties>
+	</destination>
+	
+	<destination id="VMMemoryDataFetchDest">
+		<properties>
+			<source>com.cloud.resourceStatistic.VMMemoryDataFetch</source>
+		</properties>
+	</destination>
+	
+	<destination id="VMStorageDataFetchDest">
+		<properties>
+			<source>com.cloud.resourceStatistic.VMStorageDataFetch</source>
+		</properties>
+	</destination>
+	
+	<destination id="HX_resGeoDistribution_CPUDest">
+		<properties>
+			<source>com.cloud.resourceStatistic.HX_resGeoDistribution_CPU</source>
+		</properties>
+	</destination>
+	
+	<destination id="ResGeoDistribution_MemoryDest">
+		<properties>
+			<source>com.cloud.resourceStatistic.ResGeoDistribution_Memory</source>
+		</properties>
+	</destination>
+	
+	<destination id="ResGeoDistribution_StorageDest">
+		<properties>
+			<source>com.cloud.resourceStatistic.ResGeoDistribution_Storage</source>
+		</properties>
+	</destination>
+	
+	<destination id="ResUtilization_ShowJobAndVMDest">
+		<properties>
+			<source>com.cloud.resourceStatistic.ResUtilization_ShowJobAndVM</source>
+		</properties>
+	</destination>
+	
+	<destination id="TestDest">
+   		 <properties>
+	        <source>com.cloud.jobManagement.Test</source>
+	    </properties>
+	</destination>
+	
+	<destination id="ImageServiceDest">
+		<properties>
+			<source>com.cloud.image.ImageService</source>
+		</properties>
+	</destination>
+	
+	<destination id="SessionClientDest">
+   		 <properties>
+	        <source>com.cloud.cda.SessionClient</source>
+	    </properties>
+	</destination>
+
+</service>

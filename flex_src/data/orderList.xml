@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!--
+*	id: 订单id, status: 订单状态(0-审核 ,1-执行, 2-完成, 3-异常), flowtemplateid: 流程模板id, runmode: 运行模式(0-常规模式, 1-独占模式)
+-->
+<root>
+	<item id='0' ordername='南方灾害' producttype='大气' productname='气溶胶' region='鄱阳湖' east='110' west='10' north='10' south='110' starttime='2010/12/21 14:30' endtime='2010/12/21 22:30' publishtime='2010/12/20 22:30' description='xxx' status='1' runmode='1' flowtemplateid='1'/>
+	<item id='1' ordername='印度洋海啸' producttype='大气' productname='气溶胶' region='印度洋' east='110' west='10' north='10' south='110' starttime='2010/12/21 14:30' endtime='2010/12/21 22:30' publishtime='2010/12/20 22:30' description='xxx' status='1' runmode='0' flowtemplateid='1'/>
+	<item id='2' ordername='林业资源动态监测' producttype='大气' productname='气溶胶' region='太湖' east='110' west='10' north='10' south='110' starttime='2010/12/21 14:30' endtime='2010/12/21 22:30' publishtime='2010/12/20 22:30' description='xxx' status='1' runmode='1' flowtemplateid='1'/>
+	<item id='3' ordername='土地利用动态监测' producttype='大气' productname='气溶胶' region='太湖' east='110' west='10' north='10' south='110' starttime='2010/12/21 14:30' endtime='2010/12/21 22:30' publishtime='2010/12/20 22:30' description='xxx' status='1' runmode='0' flowtemplateid='1'/>
+	<item id='4' ordername='银川平原生态调查' producttype='大气' productname='气溶胶' region='太湖' east='110' west='10' north='10' south='110' starttime='2010/12/21 14:30' endtime='2010/12/21 22:30' publishtime='2010/12/20 22:30' description='xxx' status='1' runmode='1' flowtemplateid='1'/>
+	<item id='5' ordername='矿山开发状况监测' producttype='大气' productname='气溶胶' region='太湖' east='110' west='10' north='10' south='110' starttime='2010/12/21 14:30' endtime='2010/12/21 22:30' publishtime='2010/12/20 22:30' description='xxx' status='1' runmode='1' flowtemplateid='1'/>
+	<item id='6' ordername='国土资源利用监测' producttype='大气' productname='气溶胶' region='太湖' east='110' west='10' north='10' south='110' starttime='2010/12/21 14:30' endtime='2010/12/21 22:30' publishtime='2010/12/20 22:30' description='xxx' status='1' runmode='1' flowtemplateid='1'/>
+	<item id='7' ordername='水面养殖用地分布' producttype='大气' productname='气溶胶' region='太湖' east='110' west='10' north='10' south='110' starttime='2010/12/21 14:30' endtime='2010/12/21 22:30' publishtime='2010/12/20 22:30' description='xxx' status='1' runmode='1' flowtemplateid='1'/>
+	<item id='8' ordername='农作物长势监测' producttype='大气' productname='气溶胶' region='太湖' east='110' west='10' north='10' south='110' starttime='2010/12/21 14:30' endtime='2010/12/21 22:30' publishtime='2010/12/20 22:30' description='xxx' status='1' runmode='1' flowtemplateid='1'/>
+	<errormessage></errormessage>
+</root>

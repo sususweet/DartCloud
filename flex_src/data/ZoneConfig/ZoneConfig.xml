@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<zoneconfig>
+
+		<zone>
+                <label>浙大玉泉</label>
+                <data>1</data>
+                <ip>10.214.1.151</ip>
+        </zone>
+        <zone>
+                <label>浙大西溪</label>
+                <data>2</data>
+                <ip>192.168.100.250</ip>
+        </zone>
+         <zone>
+                <label>计算所</label>
+                <data>3</data>
+                <ip>159.226.40.156</ip>
+        </zone>  
+        <zone>
+                <label>清华</label>
+                <data>4</data>
+                <ip>192.168.100.250</ip>
+        </zone>     
+        <zone>
+                <label>自动化所</label>
+                <data>5</data>
+                <ip>159.226.19.6</ip>
+        </zone>
+
+</zoneconfig>

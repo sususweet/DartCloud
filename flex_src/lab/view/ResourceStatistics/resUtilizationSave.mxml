@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%"  creationComplete="init()">
+	<mx:Script>
+		<![CDATA[
+			import lab.model.DCModelLocator;
+			import lab.util.UtilFunc;
+			import lab.valueObject.Job;
+			import lab.valueObject.StatisticModel;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.events.FlexEvent;
+			import mx.rpc.events.ResultEvent;
+			
+			private var sm:StatisticModel = new StatisticModel();
+			
+			private var gragular:int = 0;
+			
+			
+			
+			[Bindable]
+			private var utilizationList:ArrayCollection = new ArrayCollection();
+			
+			[Bindable]
+			private var vmIp:String="";
+			
+			[Bindable]
+			private var vmMemory:int=0;
+			
+			[Bindable]
+			private var vmStorage:int = 0;
+			
+			[Bindable]
+			private var dataSource:String="";
+			
+			[Bindable]
+			private static var statisticType:String="";
+			
+			[Bindable]
+			private var selectedJobId:int=0;
+			
+			[Bindable]
+			private var dcModelLocator:DCModelLocator = DCModelLocator.getInstance();
+			
+			[Bindable]
+			public var jobInfoList:ArrayCollection = dcModelLocator.userJobInfoAC;
+			
+			[Bindable]
+			public var vmInfoList:ArrayCollection = dcModelLocator.selectedVmInfoAC;
+			
+			[Bindable]
+			private var selectedVmId:int=0;
+			
+			[Bindable]
+			public var granularity:ArrayCollection = new ArrayCollection([ "天", "月", "年"]);
+			
+			public function init():void{
+//				getVmListByJobId();
+			}
+			
+			protected function ResStatisticDataFetchResultHandler(event:ResultEvent):void{
+				var result:ArrayCollection = event.result as ArrayCollection;
+				var i:int = 0;
+				
+				var timeUnit:String = sm.timeUnit;
+				
+				utilizationList.removeAll();
+				while(i < result.length){
+					
+					var num:Number = result.getItemAt(i++) as Number;
+					
+					if(statisticType=="memory"){
+						num = 100-(num/1024/Number(vmMemory))*100;
+					}
+					
+					if(statisticType=="storage"){
+						num = 100-(num/Number(vmStorage))*100;
+					}
+					
+					//testText = testText + " " + num.toString();
+					utilizationList.addItem({Time:i+timeUnit,zju:num});
+				} 
+				
+			}
+			
+			private function resMonitorResult(event:ResultEvent):void{
+				vmIp = event.result as String;
+			}
+			
+			private function getVmListByJobId():void{
+				var selectedJobNode:XML = jobList.selectedItem as XML;
+				selectedJobId = selectedJobNode.@id;
+				
+				var tmpJob:Job = jobInfoList[selectedJobId] as Job;
+				if(tmpJob.vmArrayInfo.length == 0)
+				{
+					Alert.show("该业务的虚拟机个数为0！", '提示');
+					vmInfoList.removeAll();
+				}
+				else
+				{
+					vmInfoList = UtilFunc.getOnJobVmInfo(tmpJob);
+				}
+				getStatisticOfVm();
+				/*var selectedJobNode:XML = ComboBox(event.target).selectedItem as XML;
+				selectedJobId = selectedJobNode.@label;*/
+			}
+			
+			private function getStatisticOfVm():void{
+				selectedVmId = vmList.selectedItem["strVmId"];
+				vmMemory = vmList.selectedItem["iVmMemory"];
+				vmStorage = vmList.selectedItem["iVmStorage"];
+				resMonitorRO.vmId2IP(selectedVmId);
+			}
+			
+			private function gragularChangeHandler():void{
+				switch(gragularBox.selectedIndex){
+					case 0:
+						monthUnitBox.includeInLayout=false;
+						yearUnitBox.includeInLayout=false;
+						monthUnitBox.visible=false;
+						yearUnitBox.visible=false;
+						dayUnitBox.includeInLayout = true;
+						dayUnitBox.visible = true;
+						break;
+					case 1:
+						dayUnitBox.includeInLayout=false;
+						yearUnitBox.includeInLayout=false;
+						dayUnitBox.visible=false;
+						yearUnitBox.visible=false;
+						monthUnitBox.includeInLayout = true;
+						monthUnitBox.visible = true;
+						break;
+					case 2:
+						dayUnitBox.includeInLayout=false;
+						monthUnitBox.includeInLayout=false;
+						dayUnitBox.visible=false;
+						monthUnitBox.visible=false;
+						yearUnitBox.includeInLayout = true;
+						yearUnitBox.visible = true;
+						break;
+					default:
+				}
+			}
+			
+			protected function exportBtn_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				gragular = gragularBox.selectedIndex;
+				//gragularBox.enabled = false;
+				switch(gragular){
+					case 0:
+						var monthLastDay:int = 0;
+						var year:int = int(yearOfDayUnit.text);
+						var month:int = int(monthOfDayUnit.text);
+						monthLastDay = getLastDayOfMonth(year, month);
+						sm.startTime = new Date(year, month-1,1,0,0,0,0);
+						sm.endTime = new Date(year, month-1, monthLastDay,23,59,59,0);
+						sm.reserveTime1 = year;
+						sm.reserveTime2 = month;
+						sm.timeUnit = "日";
+						statisticTitle.text = year+"年"+month+"月各部门";
+						break;
+					case 1:
+						var year:int = int(yearOfMonthUnit.text);
+						sm.startTime = new Date(year,0,1,0,0,0,0);
+						sm.endTime = new Date(year,11,31,23,59,59,0);
+						sm.reserveTime1 = year;
+						sm.timeUnit = "月";
+						statisticTitle.text = year+"年各部门";
+					case 2:
+						var yearFrom:int = int(fromYear.text);
+						var yearTo:int = int(toYear.text);
+						sm.startTime = new Date(yearFrom,0,1,0,0,0,0);
+						sm.endTime = new Date(yearTo,11,31,23,59,59,0);
+						statisticTitle.text = yearFrom+"年至"+yearTo+"各部门";
+						break;
+					default:
+				}
+				
+				dataSource = "/var/lib/ganglia/rrds/dartcloud/"+vmIp+"/";
+				//statisticType = ResourceStatisticsView.getType();
+				if(statisticType=="" || statisticType=="cpu"){
+					dataSource += "cpu_system.rrd";
+					
+					statisticTitle.text += "CPU利用率(百分比)统计";
+					chartY.title = "CPU使用率（%）";
+				}
+				else if(statisticType=="memory"){
+					dataSource += "mem_free.rrd";
+					
+					statisticTitle.text += "内存使用率（%）统计，100%代表没有监控数据";
+					chartY.title = "内存使用率（%）";
+				}
+				else if(statisticType=="storage"){
+					dataSource += "disk_free.rrd";
+					statisticTitle.text += "存储使用率（%）统计，100%代表没有监控数据";
+					chartY.title = "存储使用率（%）";
+				}/* 
+				else if(statisticType=="io"){
+				dataSource += "disk_free.rrd";
+				}
+				else if(statisticType=="network"){
+				dataSource += "disk_free.rrd";
+				}
+				else if(statisticType=="workload"){
+				dataSource += "disk_free.rrd";
+				} */
+				sm.dataSourceFile = dataSource;
+				
+				ResStatisticDataFetch.getData(sm);
+			}
+			
+			protected function getLastDayOfMonth(year:int, month:int):int{
+				var monthLastDay:int;
+				if([1,3,5,7,8,10,12].indexOf(month) != -1){
+					monthLastDay = 31;
+				}
+				else if([4,6,9,11].indexOf(month) != -1){
+					monthLastDay = 30;
+				}
+				else if(month == 2){
+					if((year%4 == 0 && year % 100 != 0) || year % 400 == 0)
+						monthLastDay = 29;
+					else monthLastDay = 28;
+				}
+				else{
+					monthLastDay = -1;
+				}
+				return monthLastDay;
+			}
+			
+			
+			public static function setStatisticType(type:String):void{
+				statisticType = type;
+			}
+			
+		]]>
+	</mx:Script>
+	<mx:RemoteObject id="ResStatisticDataFetch" destination="StatisticDataFetch" result="ResStatisticDataFetchResultHandler(event)" endpoint="http://localhost:8080/DartCloud/messagebroker/amf" />
+	<mx:RemoteObject id="resMonitorRO" destination="JobOperationDest" result="resMonitorResult(event)" />
+	
+	<!-- Define custom Strokes. -->
+	<mx:SolidColorStroke id = "s1" color="blue" weight="2"/>
+	<mx:SolidColorStroke id = "s2" color="yellow" weight="2"/>
+	<mx:SolidColorStroke id = "s3" color="green" weight="2"/>
+	<mx:SolidColorStroke id = "s4" color="#E48701" weight="2"/>
+	
+	<mx:VBox width="100%" height="100%" horizontalAlign="center">
+		<mx:HBox width="100%" height="15" />
+		
+		
+		<mx:HBox width="100%" height="30" paddingLeft="20" borderColor="blue">
+			<mx:Label text="业务"></mx:Label>
+			<mx:ComboBox width="100" id="jobList" dataProvider="{dcModelLocator.JobInfoXMLList.elements('job')}" labelField="@label" change="getVmListByJobId()" >
+			</mx:ComboBox>
+			
+			<mx:HBox width="180" height="100%" paddingLeft="20">
+				<mx:Label text="VM"></mx:Label>
+				<mx:ComboBox id="vmList" dataProvider="{vmInfoList}" labelField="strVmName" width="100" change="getStatisticOfVm()" ></mx:ComboBox>
+			</mx:HBox>
+			
+			<mx:HBox width="180" height="100%" paddingLeft="20">
+				<mx:Label text="粒度"></mx:Label>
+				<mx:ComboBox id="gragularBox" dataProvider="{granularity}" width="100"  change="gragularChangeHandler()"></mx:ComboBox>
+			</mx:HBox>
+			
+			<mx:Label text="时间范围：" height="100%" paddingLeft="20"></mx:Label>
+			<mx:HBox id="dayUnitBox" height="100%" visible="true" includeInLayout="true">
+				<mx:TextInput id="yearOfDayUnit"  width="60" />
+				<mx:Label text="年" />
+				<mx:TextInput id="monthOfDayUnit" width="30" />
+				<mx:Label text="月" />
+			</mx:HBox>
+			
+			<mx:HBox id="monthUnitBox" height="100%" visible="false" includeInLayout="false">
+				<mx:TextInput id="yearOfMonthUnit" width="60" />
+				<mx:Label text="年" />
+			</mx:HBox>
+			
+			<mx:HBox id="yearUnitBox"  height="100%" visible="false" includeInLayout="false">
+				<mx:Label text="从" />
+				<mx:TextInput id="fromYear" width="60" />
+				<mx:Label text="年" />
+				<mx:Label text="到" />
+				<mx:TextInput id="toYear" width="60" />
+				<mx:Label text="年" />
+			</mx:HBox>
+			
+			<mx:HBox width="180" height="100%" y="30" horizontalAlign="center">
+				<mx:Button width="100" id="exportBtn" label="导出结果" click="exportBtn_clickHandler(event)"></mx:Button>
+			</mx:HBox>
+			
+		</mx:HBox>
+		
+		
+		
+		
+		<mx:VBox width="95%" height="100%" horizontalAlign="center" paddingTop="10" paddingBottom="10">
+			<mx:Label id="statisticTitle" width="100%" text="" textAlign="center" color="blue" fontFamily="宋体" fontSize="14" fontWeight="bold"></mx:Label>
+			
+			<mx:LineChart id="linechart" height="100%" width="100%" showDataTips="true" dataProvider="{utilizationList}"
+						  fontSize="12" fontFamily="宋体"  visible="true" includeInLayout="true">
+				
+				<mx:horizontalAxis>
+					<mx:CategoryAxis categoryField="Time" title="时间" />
+				</mx:horizontalAxis>
+				<mx:verticalAxis>
+					<mx:LinearAxis id="chartY" minimum="0" maximum="100" minorInterval="10" title="CPU使用率（%）" />
+				</mx:verticalAxis>
+				<mx:series>
+					<mx:LineSeries xField="Time" yField="zju" form="segment" displayName="浙江大学" lineStroke="{s1}" />
+				</mx:series>
+			</mx:LineChart>
+			
+			<mx:VBox borderStyle="solid">
+				<mx:Legend height="25" dataProvider="{linechart}"/>
+			</mx:VBox>
+			
+		</mx:VBox>
+	</mx:VBox>
+</mx:Canvas>

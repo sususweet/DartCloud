@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ipinfo>
+	<node>
+		<label>外网</label>
+		<data>0</data>
+		<ip>210.32.158.64</ip>
+	</node>
+	<node>
+		<label>校园网</label>
+		<data>1</data>
+		<ip>10.22.42.89</ip>
+	</node>
+	<node>
+		<label>局域网</label>
+		<data>2</data>
+		<ip>192.168.100.250</ip>
+	</node>
+	
+	<node>
+		<label>本地</label>
+		<data>3</data>
+		<ip>localhost</ip>
+	</node>
+	
+</ipinfo>

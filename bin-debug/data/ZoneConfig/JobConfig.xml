@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jobconfig>
+	<cpu>
+		<label>1个CPU</label>
+		<data>1</data>
+	</cpu>
+	<cpu>
+		<label>2个CPU</label>
+		<data>2</data>
+	</cpu>
+	<cpu>
+		<label>4个CPU</label>
+		<data>4</data>
+	</cpu>
+
+	
+	
+	<memory>
+		<label>1G</label>
+		<data>1024</data>
+	</memory>
+	<memory>
+		<label>2G</label>
+		<data>2048</data>
+	</memory>
+	
+	<memory>
+		<label>4G</label>
+		<data>4096</data>
+	</memory>
+	<memory>
+		<label>8G</label>
+		<data>8192</data>
+	</memory>
+	<memory>
+		<label>16G</label>
+		<data>16384</data>
+	</memory>
+	<memory>
+		<label>32G</label>
+		<data>32768</data>
+	</memory>
+	<memory>
+		<label>64G</label>
+		<data>65536</data>
+	</memory>
+	
+
+	<storage>
+		<label>10G</label>
+		<data>10</data>
+	</storage>
+	<storage>
+		<label>20G</label>
+		<data>20</data>
+	</storage>
+	<storage>
+		<label>30G</label>
+		<data>30</data>
+	</storage>
+	<storage>
+		<label>40G</label>
+		<data>40</data>
+	</storage>
+	<storage>
+		<label>50G</label>
+		<data>50</data>
+	</storage>
+
+	<os>
+		<label>Linux Debian 6.0</label>
+		<data>0</data>
+	</os>
+	<os>
+		<label>Linux Ubuntu</label>
+		<data>1</data>
+	</os>
+	
+	<!--  
+	<os>
+		<label>Linux Federo</label>
+		<data>2</data>
+	</os>
+	<os>
+		<label>Linux CentOs</label>
+		<data>3</data>
+	</os>
+	
+	<os>
+		<label>Windows Xp</label>
+		<data>4</data>
+	</os>
+	<os>
+		<label>Windows 7</label>
+		<data>5</data>
+	</os>
+	-->
+
+	<hour>
+		<label>0小时</label>
+		<data>0</data>
+	</hour>
+	<hour>
+		<label>1小时</label>
+		<data>1</data>
+	</hour>
+	<hour>
+		<label>2小时</label>
+		<data>2</data>
+	</hour>
+	<hour>
+		<label>3小时</label>
+		<data>3</data>
+	</hour>
+	<hour>
+		<label>4小时</label>
+		<data>4</data>
+	</hour>
+	<hour>
+		<label>5小时</label>
+		<data>5</data>
+	</hour>
+	<hour>
+		<label>6小时</label>
+		<data>6</data>
+	</hour>
+	<hour>
+		<label>7小时</label>
+		<data>7</data>
+	</hour>
+	<hour>
+		<label>8小时</label>
+		<data>8</data>
+	</hour>
+	<hour>
+		<label>9小时</label>
+		<data>9</data>
+	</hour>
+	<hour>
+		<label>10小时</label>
+		<data>10</data>
+	</hour>
+	<hour>
+		<label>11小时</label>
+		<data>11</data>
+	</hour>
+	<hour>
+		<label>12小时</label>
+		<data>12</data>
+	</hour>
+	<hour>
+		<label>13小时</label>
+		<data>13</data>
+	</hour>
+	<hour>
+		<label>14小时</label>
+		<data>14</data>
+	</hour>
+	<hour>
+		<label>15小时</label>
+		<data>15</data>
+	</hour>
+	<hour>
+		<label>16小时</label>
+		<data>16</data>
+	</hour>
+	<hour>
+		<label>17小时</label>
+		<data>17</data>
+	</hour>
+	<hour>
+		<label>18小时</label>
+		<data>18</data>
+	</hour>
+	<hour>
+		<label>19小时</label>
+		<data>19</data>
+	</hour>
+	<hour>
+		<label>20小时</label>
+		<data>20</data>
+	</hour>
+	<hour>
+		<label>21小时</label>
+		<data>21</data>
+	</hour>
+	<hour>
+		<label>22小时</label>
+		<data>22</data>
+	</hour>
+	<hour>
+		<label>23小时</label>
+		<data>23</data>
+	</hour>
+	
+	<vmNum>
+		<label>1</label>
+		<data>1</data>
+	</vmNum>
+	<vmNum>
+		<label>2</label>
+		<data>2</data>
+	</vmNum>
+	<vmNum>
+		<label>3</label>
+		<data>3</data>
+	</vmNum>
+	<vmNum>
+		<label>4</label>
+		<data>4</data>
+	</vmNum>
+	<vmNum>
+		<label>5</label>
+		<data>5</data>
+	</vmNum>
+	
+	
+	
+	
+</jobconfig>

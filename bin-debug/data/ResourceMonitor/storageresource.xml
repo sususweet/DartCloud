@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+	<item id='0' label='工程中心' space='500TB' state='正常'>		
+		<item id='0_1' label='集群1'  cpu='240' mem='23.53 GB' state='正常' >
+			<item id='0_1_1' label='节点1' space='100TB' system='GPFS'  database='MySQL' state='正常' description='' publisherID='zxy' publicDate='2010/12/21 14:30'  />
+			<item id='0_1_2' label='节点2' space='100TB' system='GPFS'  database='MySQL' state='正常' description='' publisherID='zxy' publicDate='2010/12/21 14:30'  />
+			<item id='0_1_3' label='节点3' space='100TB' system='GPFS'  database='MySQL'  state='停用' description='' publisherID='lzl' publicDate='2010/12/21 14:30'  />
+		</item>
+		<item id='0_2' label='集群2' space='256TB' state='正常' >
+			<item id='0_2_1' label='节点1' space='100TB' system='NFS'  database='Oracle' state='正常' description='' publisherID='zxy' publicDate='2010/12/21 14:30'  />
+			<item id='0_2_2' label='节点2' space='100TB' system='NFS'  database='Oracle' state='正常' description='' publisherID='zxy' publicDate='2010/12/21 14:30'  />
+		</item>
+	</item>
+	<item id='1' label='资源卫星中心' space='1024TB' state='正常'>		
+		<item id='1_1' label='集群1' >
+			<item id='1_1_1' label='节点1' space='100TB' system='NFS'  database='Oracle' state='正常' description='' publisherID='zxy' publicDate='2010/12/21 14:30'  />
+			<item id='1_1_2' label='节点2' space='100TB' system='NFS'  database='Oracle' state='正常' description='' publisherID='zxy' publicDate='2010/12/21 14:30'  />
+			<item id='1_1_3' label='节点3' space='100TB' system='NFS'  database='Oracle'  state='停用' description='' publisherID='lzl' publicDate='2010/12/21 14:30'  />
+		</item>
+		<item id='1_2' label='集群2' >
+			<item id='1_2_1' label='节点1' space='100TB' system='GPFS'  database='MySQL' state='正常' description='' publisherID='zxy' publicDate='2010/12/21 14:30'  />
+			<item id='1_2_2' label='节点2' space='100TB' system='GPFS'  database='MySQL' state='正常' description='' publisherID='zxy' publicDate='2010/12/21 14:30'  />
+		</item>
+	</item>
+	<item id='2' label='遥感应用中心' space='256TB' state='正常'>		
+		<item id='2_1' label='集群1' >
+			<item id='2_1_1' label='节点1' space='100TB' system='NFS'  database='MySQL' state='正常' description='' publisherID='zxy' publicDate='2010/12/21 14:30'  />
+			<item id='2_1_2' label='节点2' space='100TB' system='NFS'  database='MySQL' state='正常' description='' publisherID='zxy' publicDate='2010/12/21 14:30'  />
+			<item id='2_1_3' label='节点3' space='100TB' system='NFS'  database='MySQL'  state='停用' description='' publisherID='lzl' publicDate='2010/12/21 14:30'  />
+		</item>
+		<item id='2_2' label='集群2' >
+			<item id='2_2_1' label='节点1' space='100TB' system='GPFS'  database='Oracle' state='正常' description='' publisherID='zxy' publicDate='2010/12/21 14:30'  />
+			<item id='2_2_2' label='节点2' space='100TB' system='NFS'  database='Oracle' state='正常' description='' publisherID='zxy' publicDate='2010/12/21 14:30'  />
+		</item>
+	</item>
+</root>

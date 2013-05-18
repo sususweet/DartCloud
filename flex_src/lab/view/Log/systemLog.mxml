@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" >
+	<mx:XMLList id="userLogs">
+		<userLog>
+			<time>2012-03-23 08:45:45</time>
+			<object>虚拟机-vm2</object>
+			<description>开启虚拟机异常</description>
+		</userLog>
+		<userLog>
+			<time>2012-03-23 08:45:45</time>
+			<object>虚拟机-vm2</object>
+			<description>关闭虚拟机异常</description>
+		</userLog>
+		<userLog>
+			<time>2012-03-23 08:45:45</time>
+			<object>虚拟机-vm2</object>
+			<description>虚拟机运行异常</description>
+		</userLog>
+	</mx:XMLList>
+	
+	<mx:DataGrid id="userLogsGrid" width="100%" height="100%" dataProvider="{userLogs}" borderStyle="solid" >
+		<mx:columns>
+			<mx:DataGridColumn dataField="time" headerText="时间" textAlign="center"/>
+			<mx:DataGridColumn dataField="object" headerText="对象" textAlign="center"/>
+			<mx:DataGridColumn dataField="description" headerText="详细信息" textAlign="center"/>
+		</mx:columns>
+	</mx:DataGrid>
+</mx:Canvas>

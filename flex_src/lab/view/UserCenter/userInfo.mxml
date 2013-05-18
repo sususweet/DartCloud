@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%"  >
+
+	<mx:Script>
+		<![CDATA[
+			import lab.model.DCModelLocator;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			
+			[Bindable]
+			private var dcModelLocator:DCModelLocator = DCModelLocator.getInstance();
+			
+			protected function label1_clearHandler(event:Event):void
+			{
+			}
+			
+		]]>
+	</mx:Script>
+	
+
+	<mx:VBox paddingLeft="80">
+		<mx:Form id="userInfoForm" width="350">
+			<mx:FormItem label="用户名：" height="50">
+				<mx:Label width="200" text="@{dcModelLocator.m_user.strUsername}"></mx:Label>
+			</mx:FormItem>
+			<mx:FormItem label="EMAIL：" height="50">
+				<mx:Label width="200" text="@{dcModelLocator.m_user.strUserEmail}"></mx:Label>
+			</mx:FormItem>
+			<mx:FormItem label="所属单位：" height="50">
+				<mx:Label width="200" text="@{dcModelLocator.m_user.strUserDep}"></mx:Label>
+			</mx:FormItem>
+			<mx:FormItem label="状态：" height="50">
+				<mx:Label width="200" text="正常用户"></mx:Label>
+			</mx:FormItem>
+			<mx:FormItem label="余额：" height="50">
+				<mx:Label width="200" text="0"></mx:Label>
+			</mx:FormItem>
+			<mx:FormItem label="上次登录IP：" height="50">
+				<mx:Label width="200" text="@{dcModelLocator.m_user.strLoginIp}"></mx:Label>
+			</mx:FormItem>
+		</mx:Form>
+	</mx:VBox>
+	
+	<!--
+	<mx:Button id="testBtn" click="getOneJobVmInfo()" />
+	-->
+</mx:Canvas>

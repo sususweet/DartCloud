@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="90%" height="90%" borderStyle="none">
+	<!-- 虚拟用户日志数据 -->
+	<mx:XMLList id="userLogs">
+		<userLog>
+			<time>2012-03-23 08:45:45</time>
+			<object>服务器-vm2</object>
+			<operate>开启虚拟机</operate>
+			<status>成功</status>
+			<description>开启虚拟机成功</description>
+		</userLog>
+		<userLog>
+			<time>2012-03-23 08:45:45</time>
+			<object>服务器-vm2</object>
+			<operate>开启虚拟机</operate>
+			<status>成功</status>
+			<description>开启虚拟机成功</description>
+		</userLog>
+		<userLog>
+			<time>2012-03-23 08:45:45</time>
+			<object>服务器-vm2</object>
+			<operate>开启虚拟机</operate>
+			<status>成功</status>
+			<description>开启虚拟机成功</description>
+		</userLog>
+		<userLog>
+			<time>2012-03-23 08:45:45</time>
+			<object>服务器-vm2</object>
+			<operate>开启虚拟机</operate>
+			<status>成功</status>
+			<description>开启虚拟机成功</description>
+		</userLog>
+		<userLog>
+			<time>2012-03-23 08:45:45</time>
+			<object>服务器-vm2</object>
+			<operate>开启虚拟机</operate>
+			<status>成功</status>
+			<description>开启虚拟机成功</description>
+		</userLog>
+		<userLog>
+			<time>2012-03-23 08:45:45</time>
+			<object>服务器-vm2</object>
+			<operate>开启虚拟机</operate>
+			<status>成功</status>
+			<description>开启虚拟机成功</description>
+		</userLog>
+		<userLog>
+			<time>2012-03-23 08:45:45</time>
+			<object>服务器-vm2</object>
+			<operate>开启虚拟机</operate>
+			<status>成功</status>
+			<description>开启虚拟机成功</description>
+		</userLog>
+		<userLog>
+			<time>2012-03-23 08:45:45</time>
+			<object>服务器-vm2</object>
+			<operate>开启虚拟机</operate>
+			<status>成功</status>
+			<description>开启虚拟机成功</description>
+		</userLog>
+		<userLog>
+			<time>2012-03-23 08:45:45</time>
+			<object>服务器-vm2</object>
+			<operate>开启虚拟机</operate>
+			<status>成功</status>
+			<description>开启虚拟机成功</description>
+		</userLog>
+		<userLog>
+			<time>2012-03-23 08:45:45</time>
+			<object>服务器-vm2</object>
+			<operate>开启虚拟机</operate>
+			<status>成功</status>
+			<description>开启虚拟机成功</description>
+		</userLog>
+		<userLog>
+			<time>2012-03-23 08:45:45</time>
+			<object>服务器-vm2</object>
+			<operate>开启虚拟机</operate>
+			<status>成功</status>
+			<description>开启虚拟机成功</description>
+		</userLog>
+		<userLog>
+			<time>2012-03-23 08:45:45</time>
+			<object>服务器-vm2</object>
+			<operate>开启虚拟机</operate>
+			<status>成功</status>
+			<description>开启虚拟机成功</description>
+		</userLog>
+		<userLog>
+			<time>2012-03-23 08:45:45</time>
+			<object>服务器-vm2</object>
+			<operate>开启虚拟机</operate>
+			<status>成功</status>
+			<description>开启虚拟机成功</description>
+		</userLog>
+		<userLog>
+			<time>2012-03-23 08:45:45</time>
+			<object>服务器-vm2</object>
+			<operate>开启虚拟机</operate>
+			<status>成功</status>
+			<description>开启虚拟机成功</description>
+		</userLog>
+	</mx:XMLList>
+	
+	<!-- 显示用户日志信息表格 -->
+	<mx:DataGrid id="userLogsGrid" width="100%" height="100%" dataProvider="{userLogs}" borderStyle="solid" >
+		<mx:columns>
+			<mx:DataGridColumn dataField="time" headerText="时间" textAlign="center"/>
+			<mx:DataGridColumn dataField="object" headerText="操作对象" textAlign="center"/>
+			<mx:DataGridColumn dataField="operate" headerText="动作" textAlign="center"/>
+			<mx:DataGridColumn dataField="status" headerText="状态" textAlign="center"/>
+			<mx:DataGridColumn dataField="description" headerText="详细" textAlign="center"/>
+		</mx:columns>
+	</mx:DataGrid>
+</mx:Canvas>

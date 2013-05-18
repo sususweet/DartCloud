@@ -1,0 +1,43 @@
+<IndexRP>
+  <GLUECE>
+    <Cluster Name="gczx" UniqueID="0" type="ns45:ClusterType">
+      <Host ID="0_0_0" IP="192.168.1.238" NAME="Dart.com" REPORTED_TIME="2011-04-27 13:32:10">
+        <StateInfo boottime="2011-04-19 15:52:57" cpu_num="1" cpu_speed="3191" location="" machine_type="x86" mem_total="981992" os_name="Linux" os_release="2.6.32-21-generic" swap_total="1489912" user_num="0"/>
+        <compute cpu_aidle="92.2" cpu_idle="82.4" cpu_nice="0" cpu_num="1" cpu_speed="3191" cpu_system="5.9" cpu_user="10.6" cpu_wio="0.1" load_fifteen="0.22" load_five="0.22" load_one="0.24" mem_buffers="161576" mem_cached="125780" mem_free="44044" mem_shared="0" mem_total="981992" proc_run="0" proc_total="473" swap_free="1439668" swap_total="1489912">
+          <processInfo running_task="1" sleeping_task="159" stopped_task="0" total_task="160" zombie_task="0">
+            <proc command="gmetad" cpu="2.0" mem="0.2" pid="1374" time="25:31.44" user="nobody"/>
+            <proc command="gnome-terminal" cpu="2.0" mem="1.4" pid="1852" time="9:31.84" user="globus"/>
+            <proc command="top" cpu="2.0" mem="0.1" pid="2262" time="0:00.01" user="root"/>
+            <proc command="init" cpu="0" mem="0.2" pid="1" time="0:00.76" user="root"/>
+            <proc command="kthreadd" cpu="0" mem="0" pid="2" time="0:00.00" user="root"/>
+            <proc command="migration/0" cpu="0" mem="0" pid="3" time="0:00.00" user="root"/>
+            <proc command="ksoftirqd/0" cpu="0" mem="0" pid="4" time="0:00.25" user="root"/>
+            <proc command="watchdog/0" cpu="0" mem="0" pid="5" time="0:00.00" user="root"/>
+            <proc command="events/0" cpu="0" mem="0" pid="6" time="0:00.17" user="root"/>
+            <proc command="cpuset" cpu="0" mem="0" pid="7" time="0:00.00" user="root"/>
+          </processInfo>
+        </compute>
+        <store disk_free="29.604" disk_total="40.770" part_max_used="27.4">
+          <processInfo>
+            <proc command="gnome-terminal" pid="1852" read="0.00B/s" user="globus" write="7.83K/s"/>
+            <proc command="" pid="0" read="" user="" write=""/>
+            <proc command="" pid="0" read="" user="" write=""/>
+            <proc command="" pid="0" read="" user="" write=""/>
+            <proc command="" pid="0" read="" user="" write=""/>
+          </processInfo>
+        </store>
+        <network bytes_in="3337.31" bytes_out="1694.08" pkts_in="43.22" pkts_out="16.52">
+          <processInfo>
+            <proc command="" pid="0" receive="0" send="0" user=""/>
+            <proc command="" pid="0" receive="0" send="0" user=""/>
+            <proc command="" pid="0" receive="0" send="0" user=""/>
+            <proc command="" pid="0" receive="0" send="0" user=""/>
+            <proc command="" pid="0" receive="0" send="0" user=""/>
+          </processInfo>
+        </network>
+        <service/>
+        <gmetric/>
+      </Host>
+    </Cluster>
+  </GLUECE>
+</IndexRP>

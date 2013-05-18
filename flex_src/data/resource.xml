@@ -1,0 +1,97 @@
+<Graph>
+  <Node id="1" name="中心" desc="This is a description" nodeColor="0x333333" nodeSize="32" nodeIcon="url::assets/center.png" x="10" y="10" />
+  <Node id="2" name="遥感应用中心" desc="This is a description" nodeColor="0x8F8FFF" nodeSize="12" nodeIcon="url::assets/node.png" x="10" y="15" />
+  <Node id="3" name="资源卫星中心" desc="This is a description" nodeColor="0xF00000" nodeSize="36" nodeIcon="url::assets/node.png" x="10" y="20" />
+  <Node id="4" name="对地观测中心" desc="This is a description" nodeColor="0x00FF00" nodeSize="10" nodeIcon="url::assets/node.png" x="10" y="25" />
+  
+  <Node id="8" name="计算资源" desc="This is a description" nodeColor="0x8F8FFF" nodeSize="21" nodeIcon="url::assets/computers.png" x="20" y="20" />
+  <Node id="9" name="存储资源" desc="This is a description" nodeColor="0x8F8FFF" nodeSize="15" nodeIcon="url::assets/storages.png" x="20" y="25" />
+  <Node id="10" name="服务资源" desc="This is a description" nodeColor="0x8F8FFF" nodeSize="32" nodeIcon="url::assets/services.png" x="20" y="30" />
+  
+  <Node id="11" name="计算资源" desc="This is a description" nodeColor="0x8F8FFF" nodeSize="16" nodeIcon="url::assets/computers.png" x="20" y="35" />
+  <Node id="12" name="存储资源" desc="This is a description" nodeColor="0x8F8FFF" nodeSize="12" nodeIcon="url::assets/storages.png" x="20" y="40" />
+  <Node id="13" name="服务资源" desc="This is a description" nodeColor="0x8F8FFF" nodeSize="10" nodeIcon="url::assets/services.png" x="20" y="45" />
+  
+  <Node id="14" name="计算资源" desc="This is a description" nodeColor="0x8F8FFF" nodeSize="16" nodeIcon="url::assets/computers.png" x="20" y="35" />
+  <Node id="15" name="存储资源" desc="This is a description" nodeColor="0x8F8FFF" nodeSize="12" nodeIcon="url::assets/storages.png" x="20" y="40" />
+  <Node id="16" name="服务资源" desc="This is a description" nodeColor="0x8F8FFF" nodeSize="10" nodeIcon="url::assets/services.png" x="20" y="45" />
+  
+  <Node id="17" name="计算001" desc="This is a description" nodeColor="0xF00000" nodeSize="10" nodeIcon="url::assets/computer.png" x="30" y="45" />
+  <Node id="18" name="计算002" desc="This is a description" nodeColor="0xF00000" nodeSize="10" nodeIcon="url::assets/computer.png" x="30" y="50" />
+  <Node id="19" name="计算003" desc="This is a description" nodeColor="0xF00000" nodeSize="10" nodeIcon="url::assets/computer.png" x="30" y="55" />
+  <Node id="20" name="存储001" desc="This is a description" nodeColor="0x00FF00" nodeSize="10" nodeIcon="url::assets/storage.png" x="40" y="40" />
+  <Node id="21" name="存储002" desc="This is a description" nodeColor="0x00FF00" nodeSize="15" nodeIcon="url::assets/storage.png" x="40" y="45" />
+  <Node id="22" name="存储003" desc="This is a description" nodeColor="0x00FF00" nodeSize="10" nodeIcon="url::assets/storage.png" x="40" y="50" />
+  <Node id="23" name="服务001" desc="This is a description" nodeColor="0x00FF00" nodeSize="10" nodeIcon="url::assets/service.png" x="40" y="40" />
+  <Node id="24" name="服务002" desc="This is a description" nodeColor="0x00FF00" nodeSize="15" nodeIcon="url::assets/service.png" x="40" y="45" />
+  <Node id="25" name="服务003" desc="This is a description" nodeColor="0x00FF00" nodeSize="10" nodeIcon="url::assets/service.png" x="40" y="50" />
+  
+  <Node id="26" name="计算001" desc="This is a description" nodeColor="0xF00000" nodeSize="10" nodeIcon="url::assets/computer.png" x="30" y="45" />
+  <Node id="27" name="计算002" desc="This is a description" nodeColor="0xF00000" nodeSize="10" nodeIcon="url::assets/computer.png" x="30" y="50" />
+  <Node id="28" name="计算003" desc="This is a description" nodeColor="0xF00000" nodeSize="10" nodeIcon="url::assets/computer.png" x="30" y="55" />
+  <Node id="29" name="存储001" desc="This is a description" nodeColor="0x00FF00" nodeSize="10" nodeIcon="url::assets/storage.png" x="40" y="40" />
+  <Node id="30" name="存储002" desc="This is a description" nodeColor="0x00FF00" nodeSize="15" nodeIcon="url::assets/storage.png" x="40" y="45" />
+  <Node id="31" name="存储003" desc="This is a description" nodeColor="0x00FF00" nodeSize="10" nodeIcon="url::assets/storage.png" x="40" y="50" />
+  <Node id="32" name="服务001" desc="This is a description" nodeColor="0x00FF00" nodeSize="10" nodeIcon="url::assets/service.png" x="40" y="40" />
+  <Node id="33" name="服务002" desc="This is a description" nodeColor="0x00FF00" nodeSize="15" nodeIcon="url::assets/service.png" x="40" y="45" />
+  <Node id="34" name="服务003" desc="This is a description" nodeColor="0x00FF00" nodeSize="10" nodeIcon="url::assets/service.png" x="40" y="50" />
+  
+  <Node id="35" name="计算001" desc="This is a description" nodeColor="0xF00000" nodeSize="10" nodeIcon="url::assets/computer.png" x="30" y="45" />
+  <Node id="36" name="计算002" desc="This is a description" nodeColor="0xF00000" nodeSize="10" nodeIcon="url::assets/computer.png" x="30" y="50" />
+  <Node id="37" name="计算003" desc="This is a description" nodeColor="0xF00000" nodeSize="10" nodeIcon="url::assets/computer.png" x="30" y="55" />
+  <Node id="38" name="存储001" desc="This is a description" nodeColor="0x00FF00" nodeSize="10" nodeIcon="url::assets/storage.png" x="40" y="40" />
+  <Node id="39" name="存储002" desc="This is a description" nodeColor="0x00FF00" nodeSize="15" nodeIcon="url::assets/storage.png" x="40" y="45" />
+  <Node id="40" name="存储003" desc="This is a description" nodeColor="0x00FF00" nodeSize="10" nodeIcon="url::assets/storage.png" x="40" y="50" />
+  <Node id="41" name="服务001" desc="This is a description" nodeColor="0x00FF00" nodeSize="10" nodeIcon="url::assets/service.png" x="40" y="40" />
+  <Node id="42" name="服务002" desc="This is a description" nodeColor="0x00FF00" nodeSize="15" nodeIcon="url::assets/service.png" x="40" y="45" />
+  <Node id="43" name="服务003" desc="This is a description" nodeColor="0x00FF00" nodeSize="10" nodeIcon="url::assets/service.png" x="40" y="50" />
+
+  <Edge fromID="1" toID="2" edgeLabel="1000M" flow="400" color="0xcd5c5c" edgeClass="sun" edgeIcon="Bad" />
+  <Edge fromID="1" toID="3" edgeLabel="100M" flow="400" color="0xcd5c5c" edgeClass="sun" edgeIcon="Bad" />
+  <Edge fromID="1" toID="4" edgeLabel="100M" flow="80" color="0xb22222" edgeClass="sun" edgeIcon="Good" />
+  <Edge fromID="2" toID="3" edgeLabel="100M" flow="400" color="0xcd5c5c" edgeClass="sun" edgeIcon="Bad" />
+  <Edge fromID="2" toID="4" edgeLabel="100M" flow="400" color="0xcd5c5c" edgeClass="sun" edgeIcon="Bad" />
+  <Edge fromID="3" toID="4" edgeLabel="10G" flow="400" color="0xcd5c5c" edgeClass="sun" edgeIcon="Bad" />
+  
+  <Edge fromID="2" toID="8" edgeLabel="" flow="100" edgeClass="rain" edgeIcon="Good" />
+  <Edge fromID="2" toID="9" edgeLabel="" flow="400" edgeClass="rain" edgeIcon="Bad" />
+  <Edge fromID="2" toID="10" edgeLabel="" flow="800" edgeClass="rain" edgeIcon="NoChange" />
+  
+  <Edge fromID="3" toID="11" edgeLabel="" flow="100" edgeClass="rain" edgeIcon="Good" />
+  <Edge fromID="3" toID="12" edgeLabel="" flow="120" edgeClass="rain" edgeIcon="Bad" />
+  <Edge fromID="3" toID="13" edgeLabel="" flow="150" edgeClass="rain" edgeIcon="NoChange" />
+
+  <Edge fromID="4" toID="14" edgeLabel="" flow="1" edgeClass="rain" edgeIcon="Good" />
+  <Edge fromID="4" toID="15" edgeLabel="" flow="40" edgeClass="rain" edgeIcon="NoChange" />
+  <Edge fromID="4" toID="16" edgeLabel="" flow="80" edgeClass="rain" edgeIcon="Bad" />
+  
+  <Edge fromID="8" toID="17" edgeLabel="" flow="100" edgeClass="rain" edgeIcon="Good" />
+  <Edge fromID="8" toID="18" edgeLabel="" flow="120" edgeClass="rain" edgeIcon="Good" />
+  <Edge fromID="8" toID="19" edgeLabel="" flow="15" edgeClass="rain" edgeIcon="Bad" />
+  <Edge fromID="9" toID="20" edgeLabel="" flow="1" edgeClass="rain" edgeIcon="Bad" />
+  <Edge fromID="9" toID="21" edgeLabel="" flow="40" edgeClass="rain" edgeIcon="Good" />
+  <Edge fromID="9" toID="22" edgeLabel="" flow="8" edgeClass="rain" edgeIcon="NoChange" />
+  <Edge fromID="10" toID="23" edgeLabel="" flow="100" edgeClass="rain" edgeIcon="Good" />
+  <Edge fromID="10" toID="24" edgeLabel="" flow="120" edgeClass="rain" edgeIcon="Good" />
+  <Edge fromID="10" toID="25" edgeLabel="" flow="150" edgeClass="rain" edgeIcon="Bad" />
+  
+  <Edge fromID="11" toID="26" edgeLabel="" flow="100" edgeClass="rain" edgeIcon="Good" />
+  <Edge fromID="11" toID="27" edgeLabel="" flow="120" edgeClass="rain" edgeIcon="Good" />
+  <Edge fromID="11" toID="28" edgeLabel="" flow="15" edgeClass="rain" edgeIcon="Bad" />
+  <Edge fromID="12" toID="29" edgeLabel="" flow="1" edgeClass="rain" edgeIcon="Bad" />
+  <Edge fromID="12" toID="30" edgeLabel="" flow="40" edgeClass="rain" edgeIcon="Good" />
+  <Edge fromID="12" toID="31" edgeLabel="" flow="8" edgeClass="rain" edgeIcon="NoChange" />
+  <Edge fromID="13" toID="32" edgeLabel="" flow="100" edgeClass="rain" edgeIcon="Good" />
+  <Edge fromID="13" toID="33" edgeLabel="" flow="120" edgeClass="rain" edgeIcon="Good" />
+  <Edge fromID="13" toID="34" edgeLabel="" flow="150" edgeClass="rain" edgeIcon="Bad" />    
+  
+  <Edge fromID="14" toID="35" edgeLabel="" flow="100" edgeClass="rain" edgeIcon="Good" />
+  <Edge fromID="14" toID="36" edgeLabel="" flow="120" edgeClass="rain" edgeIcon="Good" />
+  <Edge fromID="14" toID="37" edgeLabel="" flow="15" edgeClass="rain" edgeIcon="Bad" />
+  <Edge fromID="15" toID="38" edgeLabel="" flow="1" edgeClass="rain" edgeIcon="Bad" />
+  <Edge fromID="15" toID="39" edgeLabel="" flow="40" edgeClass="rain" edgeIcon="Good" />
+  <Edge fromID="15" toID="40" edgeLabel="" flow="8" edgeClass="rain" edgeIcon="NoChange" />
+  <Edge fromID="16" toID="41" edgeLabel="" flow="100" edgeClass="rain" edgeIcon="Good" />
+  <Edge fromID="16" toID="42" edgeLabel="" flow="120" edgeClass="rain" edgeIcon="Good" />
+  <Edge fromID="16" toID="43" edgeLabel="" flow="150" edgeClass="rain" edgeIcon="Bad" />  
+</Graph>

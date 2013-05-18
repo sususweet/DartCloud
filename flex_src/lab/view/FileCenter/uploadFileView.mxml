@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow  xmlns:mx="http://www.adobe.com/2006/mxml" width="1200" height="600" layout="absolute"
+				 title="上传文件" showCloseButton="true" fontSize="12" close="titlewindow1_closeHandler(event)"
+				 creationComplete="titlewindow1_creationCompleteHandler(event)" xmlns:flexiframe="com.google.code.flexiframe.*" xmlns:dg="dg.*" >
+	
+	<mx:Metadata>
+		[Event(name="DelEvent",type="view.FileCenter.DeleteFileEvent")]
+	</mx:Metadata>
+	
+	<mx:Script>
+		
+		<![CDATA[
+			import dg.myadg.CheckBoxHeaderRenderer;
+			import dg.myadg.CheckBoxItemRenderer;
+			import dg.myadg.CheckboxColumn;
+			
+			import lab.model.DCModelLocator;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.controls.ProgressBar;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.events.ListEvent;
+			import mx.managers.PopUpManager;
+			
+			import mx.rpc.events.ResultEvent;
+			
+			
+			[Bindable]
+			private var dcModelLocator:DCModelLocator = DCModelLocator.getInstance();
+			
+			//uploadDir表示用户上传文件的文件夹，以该用户的用户名进行命名。
+//			var str:String = "http://dartcloud.oicp.net:8080/mupload/?uploadDir=zjuccnt";
+//			var str:String = "http://192.168.0.154:8080/mupload/?uploadDir=zjuccnt";
+			
+			
+			private var myFileReferenceList:FileReferenceList = new FileReferenceList();
+			
+			[Bindable]
+			public var fileInfo:ArrayCollection = new ArrayCollection();
+			
+
+			protected function titlewindow1_closeHandler(event:CloseEvent):void
+			{
+				PopUpManager.removePopUp(this);
+			}
+			
+			protected function titlewindow1_creationCompleteHandler(event:FlexEvent):void
+			{
+				fileDataGrid.addEventListener("DelEvent", deleteFileHandler);
+			}
+			
+			protected function deleteFileHandler(evt:DeleteFileEvent):void//删除文件操作
+			{
+				var index:int = fileInfo.getItemIndex(evt._deleteFile);
+				(SingleFile)(fileInfo.getItemAt(index)).file.cancel();
+				fileInfo.removeItemAt(index);
+				if(fileInfo.length < 1)
+				{
+					uploadPublic.enabled = false;
+					uploadPrivate.enabled = false;
+					uploadNotAllPublic.enabled = false;
+				}
+			}
+			
+			protected function fileSelectHandler(event:Event):void
+			{
+				for each(var file:FileReference in myFileReferenceList.fileList)
+				{
+					var sf:SingleFile = new SingleFile();
+					sf.file = file;
+					sf.progress = 0;
+					sf.getFileName();
+					sf.getFileSize();
+					//sf.file.addEventListener(ProgressEvent.PROGRESS, uploadProgressHandler(event));
+					fileInfo.addItem(sf);
+				}
+				if(fileInfo.length >= 1)
+				{
+					uploadPublic.enabled = true;
+					uploadPrivate.enabled = true;
+					uploadNotAllPublic.enabled = true;
+				}
+				else
+				{
+					uploadPublic.enabled = false;
+					uploadPrivate.enabled = false;
+					uploadNotAllPublic.enabled = false;
+				}
+			}
+			
+			
+			
+			protected function button1_clickHandler(event:MouseEvent):void
+			{
+				myFileReferenceList.addEventListener(Event.SELECT, fileSelectHandler);
+				var fileFilter:FileFilter = new FileFilter("任意文件类型","*.*");
+				myFileReferenceList.browse([fileFilter]);
+			}
+			protected function button2_clickHandler(event:MouseEvent):void
+			{
+				var strUploadUrl:String = "http://" + dcModelLocator.webServerIp + 
+					"/mupload/mupload.do?uploadDir=" + dcModelLocator.curSelectedJob.iJobId + "&&isShare=false";
+				
+				//var strUploadUrl:String = "http://localhost:8080" + 
+				//		"/mupload/mupload.do?uploadDir=" + dcModelLocator.curSelectedJob.iJobId + "&&isShare=false";
+				//Alert.show(dcModelLocator.curSelectedJob.iJobId.toString());
+				
+				for(var i:int = 0; i < fileInfo.length; i ++)
+				{
+					(SingleFile)(fileInfo.getItemAt(i)).file.upload(new URLRequest(strUploadUrl));
+				}
+			}
+			
+			protected function button3_clickHandler(event:MouseEvent):void
+			{
+				var uploadFileList:ArrayCollection = new ArrayCollection();
+				for(var index: int = 0; index < fileInfo.length; index ++)
+				{
+					var uploadFileInfo:UploadFileInfo_Flex = new UploadFileInfo_Flex();
+					uploadFileInfo.file_Category = (SingleFile)(fileInfo.getItemAt(index)).fileCategory;
+					uploadFileInfo.file_Description = (SingleFile)(fileInfo.getItemAt(index)).fileDescription;
+					uploadFileInfo.file_Name = (SingleFile)(fileInfo.getItemAt(index)).fileName;
+					uploadFileInfo.file_Size = (SingleFile)(fileInfo.getItemAt(index)).fileSize;
+					uploadFileInfo.file_Owner = dcModelLocator.m_user.strUsername;
+					uploadFileInfo.file_Type = "public_to_all";
+					uploadFileList.addItem(uploadFileInfo);
+				}
+				UploadFileListRO.saveFileInfoToDB(uploadFileList);
+				
+				var strUploadUrl:String = "http://" + dcModelLocator.webServerIp + 
+					"/mupload/mupload.do?isShare=true";
+				//var strUploadUrl:String = "http://localhost:8080" +  
+				//	"/mupload/mupload.do?isShare=true";
+				
+				for(var i:int = 0; i < fileInfo.length; i ++)
+				{
+					(SingleFile)(fileInfo.getItemAt(i)).file.upload(new URLRequest(strUploadUrl));
+				}
+			}
+			
+			protected function notAllPublic_ClickHandler(event:MouseEvent):void
+			{
+				var uploadFileList:ArrayCollection = new ArrayCollection();
+				for(var index: int = 0; index < fileInfo.length; index ++)
+				{
+					var uploadFileInfo:UploadFileInfo_Flex = new UploadFileInfo_Flex();
+					uploadFileInfo.file_Category = (SingleFile)(fileInfo.getItemAt(index)).fileCategory;
+					uploadFileInfo.file_Description = (SingleFile)(fileInfo.getItemAt(index)).fileDescription;
+					uploadFileInfo.file_Name = (SingleFile)(fileInfo.getItemAt(index)).fileName;
+					uploadFileInfo.file_Size = (SingleFile)(fileInfo.getItemAt(index)).fileSize;
+					uploadFileInfo.file_Owner = dcModelLocator.m_user.strUsername;
+					uploadFileInfo.file_Type = "public_not_to_all";
+					uploadFileList.addItem(uploadFileInfo);
+				}
+				UploadFileListRO.saveFileInfoToDB(uploadFileList);
+				
+				//Alert.show(dcModelLocator.m_user.strUsername + "---" + (SingleFile)(fileInfo.getItemAt(0)).fileCategory + "---" + (SingleFile)(fileInfo.getItemAt(0)).fileDescription + "---" + (SingleFile)(fileInfo.getItemAt(0)).fileName + "---" + (SingleFile)(fileInfo.getItemAt(0)).fileSize);
+				
+				var strUploadUrl:String = "http://" + dcModelLocator.webServerIp + 
+					"/mupload/mupload.do?isShare=betweenTrueAndFalse";
+				//var strUploadUrl:String = "http://localhost:8080" + 
+				//	"/mupload/mupload.do?isShare=betweenTrueAndFalse";
+				
+				for(var i:int = 0; i < fileInfo.length; i ++)
+				{
+					(SingleFile)(fileInfo.getItemAt(i)).file.upload(new URLRequest(strUploadUrl));
+				}
+			}
+			
+			protected function UploadFileListRO_resultHandler(event:ResultEvent):void
+			{
+				// TODO Auto-generated method stub
+				
+			}
+			
+		]]>
+		
+		
+		
+	</mx:Script>
+	<mx:RemoteObject id="UploadFileListRO" destination="UploadFileListDest" result="UploadFileListRO_resultHandler(event)" />
+	<!--此控件用于读取业务申请页面一些下拉框的数据   <mx:Label text="http://210.32.158.64/mupload/?uploadDir=mydisk" />-->	
+	
+	<mx:Label x="456" y="40" text="暂不支持上传中文文件名" color="red" fontSize="14" fontWeight="bold"/>
+	<mx:Button x="62" y="80" label="选择文件" click="button1_clickHandler(event)"/>
+	<mx:Button x="600" y="80" id="uploadNotAllPublic" label="上传到协同共享盘" enabled="false" click="notAllPublic_ClickHandler(event)" />
+	<mx:Button x="770" y="80" id="uploadPublic" label="上传到公共盘" enabled="false" click="button3_clickHandler(event)"/>
+	<mx:Button x="940" y="80" id="uploadPrivate" label="上传到业务盘" enabled="false" click="button2_clickHandler(event)" />
+	
+	<dg:AdvancedDataGrid x="40" y="140" id="fileDataGrid" width="90%" height="400" sortExpertMode="true" selectable="false" 
+						 hasCheck="false" dataProvider="{fileInfo}" sortableColumns="false" variableRowHeight="true" rowHeight="25">
+		<dg:columns>
+			<mx:AdvancedDataGridColumn dataField="fileName" headerText="文件名称" fontWeight="bold" textAlign="center" width="360" editable="false"/>
+			<mx:AdvancedDataGridColumn dataField="fileSize" headerText="文件大小" textAlign="center" width="100" editable="false"/>
+			
+			<mx:AdvancedDataGridColumn width="100" headerText="文件类别" textAlign="center" editable="false">
+				<mx:itemRenderer>
+					<mx:Component>
+						<mx:HBox horizontalAlign="center">
+							<mx:XMLList id="category">
+								<item label="API文档" />
+								<item label="一般文档" />
+								<item label="应用程序" />
+								<item label="词料库" />
+								<item label="语料库" />
+								<item label="其它" />
+							</mx:XMLList>
+							<mx:Script>
+								<![CDATA[
+									import mx.events.FlexEvent;
+									import mx.events.MenuEvent;
+									
+									public function itemClickHandler(event:mx.events.MenuEvent):void
+									{
+										popUpButton.label = event.label;
+									}								
+								]]>
+								</mx:Script>
+							<mx:PopUpMenuButton id="popUpButton" width="90" labelField="@label" dataProvider="{category}" 
+												itemClick="itemClickHandler(event)" label="@{data.fileCategory}"/>
+						</mx:HBox>
+					</mx:Component>
+				</mx:itemRenderer>
+			</mx:AdvancedDataGridColumn>
+			
+			<mx:AdvancedDataGridColumn headerText="文件描述" width="200" editable="false">
+				<mx:itemRenderer>
+					<mx:Component>
+						<mx:HBox horizontalAlign="center">
+							<mx:TextArea id="textInput" width="196" height="100" verticalScrollPolicy="auto" horizontalScrollPolicy="off" 
+										 maxChars="1000" wordWrap="true" editable="true"
+										 text="@{data.fileDescription}"/>
+							</mx:HBox>
+					</mx:Component>
+					</mx:itemRenderer>
+			</mx:AdvancedDataGridColumn>
+			
+			<mx:AdvancedDataGridColumn id="uploadProgress" headerText="上传进度" textAlign="center" width="160" editable="false">
+				<mx:itemRenderer>
+					<mx:Component id="uploadProgressItemRenderer">
+						
+						<mx:HBox horizontalAlign="center">
+							
+							<mx:Script>
+								<![CDATA[
+									
+								protected var uploadProgress:int = 0;
+									
+								override public function set data(value:Object):void
+								{
+									super.data = value;
+									if(data == null)
+									{
+										return;
+									}
+									else
+									{
+										var sf:SingleFile=(SingleFile)(data);
+										//文件句柄
+										var file:FileReference=sf.file;
+										
+										prg.setProgress(data.progress , 100);
+										file.addEventListener(ProgressEvent.PROGRESS, progress);
+									}
+								}
+									
+								private function progress(event:ProgressEvent):void
+								{
+									prg.setProgress(event.bytesLoaded, event.bytesTotal);
+									uploadProgress = prg.percentComplete;
+								}
+								
+								]]>
+							</mx:Script>
+							
+							<mx:ProgressBar id="prg" barColor="#87e25f" trackColors="[white, haloSilver]"
+											width="145" height="16" labelPlacement="center" mode="manual" label="%3%%"/>
+							
+						</mx:HBox>
+					</mx:Component>
+				</mx:itemRenderer>
+			</mx:AdvancedDataGridColumn>
+			
+			<mx:AdvancedDataGridColumn headerText="操作栏" textAlign="center" editable="false">
+				<mx:itemRenderer>
+					<mx:Component>
+						<mx:HBox horizontalAlign="center">
+							
+							<mx:Script>
+								<![CDATA[
+								
+									protected function deleteFile_clickHandler(event:MouseEvent):void
+									{
+										// TODO Auto-generated method stub
+										var evt:DeleteFileEvent=new DeleteFileEvent("DelEvent", data);
+										dispatchEvent(evt);
+										
+									}
+									
+								]]>
+							</mx:Script>
+							<mx:LinkButton id="deleteFile" label="移除" click="deleteFile_clickHandler(event)"/>
+							
+						</mx:HBox>
+						
+					</mx:Component>
+				</mx:itemRenderer>
+			</mx:AdvancedDataGridColumn>
+			
+		</dg:columns>
+	</dg:AdvancedDataGrid>
+	
+</mx:TitleWindow>	

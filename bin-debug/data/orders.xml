@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+	<item id='0' ordername='某某灾害' producttype='大气' productname='气溶胶' region='太湖' east='110' west='10' north='10' south='110' starttime='2010/12/21 14:30' endtime='2010/12/21 22:30' publishtime='2010/12/20 22:30' description='xxx' status='执行'/>
+	<item id='1' ordername='某某灾害' producttype='大气' productname='气溶胶' region='太湖' east='110' west='10' north='10' south='110' starttime='2010/12/21 14:30' endtime='2010/12/21 22:30' publishtime='2010/12/20 22:30' description='xxx' status='执行'/>
+</root>

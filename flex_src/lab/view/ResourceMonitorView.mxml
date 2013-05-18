@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" 
+		 xmlns:flexlib="http://code.google.com/p/flexlib/" xmlns:ResourceMonitor="lab.view.ResourceMonitor.*" xmlns:BusineMan="lab.view.BusinessManagement.*"
+		 xmlns:view="lab.view.*" xmlns:flexiframe="com.google.code.flexiframe.*" creationComplete="init()">
+	<mx:Script>
+		<![CDATA[
+			import com.google.code.flexiframe.IFrame;
+			
+			import lab.model.DCModelLocator;
+			import lab.util.UtilFunc;
+			import lab.valueObject.Job;
+			import lab.valueObject.NetType;
+			import lab.valueObject.User;
+			import lab.valueObject.VM;
+			import lab.view.BusinessManagement.list;
+			import lab.view.ResourceMonitor.VmMonitroGraph;
+			
+			import mx.collections.XMLListCollection;
+			import mx.controls.Alert;
+			import mx.events.FlexEvent;
+			import mx.events.ListEvent;
+			//单例，全局变量；程序运行时可能用到的一些配置信息。 strVmIp
+			[Bindable]
+			private var dcModelLocator:DCModelLocator = DCModelLocator.getInstance();
+			
+			[Bindable]
+			private var strVmMonUrl:String = "";
+			
+			private function init():void
+			{
+				var strVmIp:String = "";
+				var strFrontIp:String = getFrontServerIp();
+				//设置一个默认的主机
+				if(null == dcModelLocator || dcModelLocator.selectedVmInfoAC.length == 0 || dcModelLocator.selectedVmInfoAC[0] == null || null == dcModelLocator.selectedVmInfoAC[0].strVmIp)
+				{
+					strVmIp = "192.168.100.250";
+				}
+				else
+					strVmIp = dcModelLocator.selectedVmInfoAC[0].strVmIp;
+				strVmMonUrl = "http://" + strFrontIp + ":8080/?m=load_one&r=hour&s=descending&c=cloudCluster&h=" +
+					strVmIp + "&sh=1&hc=4&z=small";
+				trace("监控URL: " + strVmMonUrl);
+			}
+			
+			//当点击不同的业务名称时，主列表上应该显示该业务下相应的虚拟机信息。
+			protected function jobInfoTree_changeHandler(event:ListEvent):void
+			{
+				UtilFunc.jobInfoTree_changeHandler(event);
+				//更新虚拟机IP信息.
+				init();
+			}
+			
+			protected function getFrontServerIp():String
+			{
+				var strFrontIp:String = "";
+				
+				//没有选择特定的业务，就以第一个业务的IP作为默认的当前域的前端服务器IP；
+				if(null == dcModelLocator.curSelectedJob) 
+				{
+					
+					if(dcModelLocator.curNetType == NetType.LAN_IP || dcModelLocator.curNetType == NetType.LOCALHOST)
+					{
+						strFrontIp = "192.168.100.250";
+					}
+					else if(dcModelLocator.curNetType == NetType.SCHOOL_IP)
+					{
+						strFrontIp = "10.22.42.89";
+					}
+					else if(dcModelLocator.curNetType == NetType.PUBLIC_IP)
+					{
+						strFrontIp = "210.32.158.64";
+					}
+				}
+				else
+				{
+					
+					if(dcModelLocator.curNetType == NetType.LAN_IP)
+					{
+						strFrontIp = dcModelLocator.curSelectedJob.strZoneLAN_Ip;
+					}
+					else if(dcModelLocator.curNetType == NetType.SCHOOL_IP)
+					{
+						strFrontIp = dcModelLocator.curSelectedJob.strZoneSchoolIp;
+					}
+					else if(dcModelLocator.curNetType == NetType.PUBLIC_IP)
+					{
+						strFrontIp = dcModelLocator.curSelectedJob.strZonePublicIp;
+					}
+					else if(dcModelLocator.curNetType == NetType.LOCALHOST)
+					{
+						strFrontIp = "192.168.100.250";
+					}
+				}
+							
+				return strFrontIp;
+			}
+		]]>
+	</mx:Script>
+	
+	<mx:VBox width="15%" height="100%" label="test">
+		<mx:Tree id="businessTree" width="100%" height="100%" 
+				 labelField="@label" iconField="@icon" showRoot="true" dataProvider="{dcModelLocator.JobInfoXMLList}"
+				 change="jobInfoTree_changeHandler(event)" />
+	</mx:VBox>
+	<mx:VBox width="85%" height="100%" >
+		<mx:Label text="@{strVmMonUrl}" />
+		<flexiframe:IFrame  width="100%" height="100%" source="@{strVmMonUrl}" />
+	</mx:VBox>
+	
+	
+	
+</mx:HBox>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+	<item id='0' label='工程中心' dartFTP='繁忙' dartSearch='可用' dartMDS='可用' dartStore='维护' JTangFlow='未安装' JTangReport='未安装' JTangFS='未安装'>		
+	</item>
+	<item id='0' label='对地观测中心' dartFTP='可用' dartSearch='维护' dartMDS='可用' dartStore='维护' JTangFlow='未安装' JTangReport='未安装' JTangFS='未安装'>		
+	</item>
+	<item id='0' label='资源卫星中心' dartFTP='可用' dartSearch='可用' dartMDS='维护' dartStore='可用' JTangFlow='未安装' JTangReport='未安装' JTangFS='未安装'>		
+	</item>
+	<item id='0' label='遥感应用中心' dartFTP='维护' dartSearch='可用' dartMDS='未安装' dartStore='可用' JTangFlow='未安装' JTangReport='未安装' JTangFS='未安装'>		
+	</item>
+</root>

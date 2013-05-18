@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx"
+		 xmlns:s="library://ns.adobe.com/flex/spark" width="400" height="300" 
+		 title="Hadoop自动部署" showCloseButton="true" fontSize="12"
+		 close="PopUpManager.removePopUp(this);" creationComplete="init(event)">
+
+	<fx:Script>
+		<![CDATA[
+			import lab.model.DCModelLocator;
+			import lab.valueObject.VM;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.events.FlexEvent;
+			import mx.events.ListEvent;
+			import mx.managers.PopUpManager;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			
+			//单例，全局变量；程序运行时可能用到的一些配置信息。
+			[Bindable]
+			private var dcModelLocator:DCModelLocator = DCModelLocator.getInstance();
+
+			[Bindable]
+			private var vmInfoList:ArrayCollection = new ArrayCollection();
+			
+			private var namenodeId:int = 0;
+			
+			protected function init(event:FlexEvent):void
+			{
+				var vmArr:ArrayCollection = dcModelLocator.curSelectedJob.vmArrayInfo;
+				var tmpVm:VM = new VM();
+				for(var i:int=0; i<vmArr.length; i++)
+				{
+					tmpVm = vmArr[i] as VM;
+					vmInfoList.addItem({label:tmpVm.strVmName, data:tmpVm.strVmId,test:"test"});
+				}
+			}
+			
+			/**
+			 * namenode改变时。
+			 */
+			protected function combVmlist_changeHandler(event:ListEvent):void
+			{
+			}
+
+
+			/**
+			 * 确定按钮
+			 */
+			protected function btnOK_clickHandler(event:MouseEvent):void
+			{
+				var strNameNode:String = String(combVmlist.value);
+				hadoopRO.hadoopAutoConf(dcModelLocator.curSelectedJob.iJobId, strNameNode, dcModelLocator.curSelectedJob.vmArrayInfo);
+				PopUpManager.removePopUp(this);
+			}
+
+			/**
+			 * 取消按钮。
+			 */
+			protected function btnCancel_clickHandler(event:MouseEvent):void
+			{
+				PopUpManager.removePopUp(this);
+			}
+
+
+			protected function hadoopRO_resultHandler(event:ResultEvent):void
+			{
+				if(true == event.result as Boolean)
+					Alert.show("Hadoop集群部署成功...");
+				else
+					Alert.show("Hadoop集群部署出现异常");
+				trace("hadoop result: " + event.result.toString());
+			}
+
+
+			protected function hadoopRO_faultHandler(event:FaultEvent):void
+			{
+				Alert.show("Hadoop集群部署出现错误...");
+				trace("hadoop fault: " + event.fault.toString());
+			}
+
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+		<mx:RemoteObject id="hadoopRO" destination="JobOperationDest" result="hadoopRO_resultHandler(event)" fault="hadoopRO_faultHandler(event)"/>
+	</fx:Declarations>
+	
+	<mx:Form width="100%" paddingLeft="50" paddingTop="30">
+		<mx:FormItem label="请选择namenode" height="30" >
+			<mx:ComboBox id="combVmlist"  dataProvider="{vmInfoList}" change="combVmlist_changeHandler(event)" 
+						 labelField="label"></mx:ComboBox>
+		</mx:FormItem>
+		
+		<mx:FormItem direction="horizontal">
+			<mx:Button id="btnOK" label="确定" click="btnOK_clickHandler(event)" />
+			<mx:Button id="btnCancel" label="取消" click="btnCancel_clickHandler(event)" />
+		</mx:FormItem>
+		
+	</mx:Form>
+	
+</mx:TitleWindow>

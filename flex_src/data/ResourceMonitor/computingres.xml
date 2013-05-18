@@ -1,0 +1,13 @@
+<node>
+            <node label="Inbox">
+                <node label="Marketing"/>
+                <node label="Product Management"/>
+                <node label="Personal"/>
+            </node>
+            <node label="Outbox">
+                <node label="Professional"/>
+                <node label="Personal"/>
+            </node>
+            <node label="Spam"/>
+            <node label="Sent"/>
+</node>

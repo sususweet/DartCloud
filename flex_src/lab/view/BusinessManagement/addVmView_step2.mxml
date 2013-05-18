@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow  xmlns:mx="http://www.adobe.com/2006/mxml" width="600" height="650"
+				 title="添加虚拟机  第2步（共2步）" showCloseButton="true" fontSize="12" 
+				 close="PopUpManager.removePopUp(this);" creationComplete="init()">
+	<mx:Script>
+		<![CDATA[
+			import lab.events.CreateOneJobEvent;
+			import lab.events.LoadJobInfoEvent;
+			import lab.model.DCModelLocator;
+			import lab.valueObject.Job;
+			
+			import mx.containers.TitleWindow;
+			import mx.controls.Alert;
+			import mx.managers.PopUpManager;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			
+			private var step_one:addVmView_step1;
+			private var step_three:TitleWindow;
+			private static var createSuccess:Boolean = false;
+			
+			[Bindable]
+			private var dcModelLocator:DCModelLocator = DCModelLocator.getInstance();
+			
+			[Bindable]
+			public var job:Job = new Job();
+			public var strIp:String = "";
+			
+			
+			public static function getCreateSuccess():Boolean{
+				return createSuccess;
+			}
+			
+			private function cancel2():void{
+				PopUpManager.removePopUp(this);
+			}
+			
+			private function init():void{
+				cpuNumValue.text = job.iCpuNum+"个";
+				memoryValue.text = job.iMemSize+"M";
+				storageValue.text = job.iStorageSize+"G";
+				osType.text = job.iOSType+"";
+				time.text = int(job.iApplyHour/24).toString() +"天"+ (job.iApplyHour%24).toString()+"小时";
+				vmNum.text = job.iVmNum+"";
+//				description.text = job.strJobDescription;
+			}
+			
+			//跳转到第一步
+			private function step_1():void{
+				PopUpManager.removePopUp(this);
+				step_one = PopUpManager.createPopUp(this, addVmView_step1, true) as addVmView_step1;
+				step_one.job = job;
+				//使弹出框居中
+				PopUpManager.centerPopUp(step_one);
+			}
+			
+			//确认
+			public function addVmsToJob():void{
+//				CheckImageEnoughRO.checkImage(job.iVmNum, job.iOSType);
+				sure.enabled = false;
+				sure.label = "请稍等";
+				JobOperationRO.addVms2Job(job);
+			}
+			
+			
+//			protected function CheckImageEnoughRO_resultHandler(event:ResultEvent):void
+//			{
+//				var isEnough:Boolean = event.result;
+//				if(isEnough == true)
+//				{
+//					var createOneJobEvent:CreateOneJobEvent = new CreateOneJobEvent(job);
+//					createOneJobEvent.dispatch();
+//					
+//					//清除当前的弹出窗口。
+//					PopUpManager.removePopUp(this);
+//				}
+//				else
+//				{
+//					Alert.show("虚拟机镜像不足，请等待！" + event.result.toString());
+//				}
+//				
+//			}
+//			
+//			
+//			protected function CheckImageEnoughRO_faultHandler(event:FaultEvent):void
+//			{
+//				Alert.show("新建业务出现异常！" + event.toString());
+//			}
+			
+			
+
+			protected function JobOperationRO_resultHandler(event:ResultEvent):void
+			{
+				var ret:Boolean = event.result as  Boolean;
+				
+				if(true == ret)
+				{
+					Alert.show("虚拟机添加成功！虚拟机开启需要一定时间，请耐心等待......",'提示');
+					
+				}
+				else
+				{
+					//可能部分创建成功。
+					Alert.show("虚拟机添加失败！",'提示');
+				}
+				
+				//更新用户的业务信息。
+				var loadJobInfoEvent:LoadJobInfoEvent = new LoadJobInfoEvent(dcModelLocator.m_user.iUserId);
+				loadJobInfoEvent.dispatch();
+				
+				//去掉当前窗口
+				PopUpManager.removePopUp(this);
+			}
+
+
+			protected function JobOperationRO_faultHandler(event:FaultEvent):void
+			{
+				trace("fault in DelteOneJobCommand!");
+				Alert.show("添加虚拟机失败！" + event.fault,'提示');
+			}
+
+		]]>
+	</mx:Script>
+	<!--endpoint="http://localhost:8080/DartCloud/messagebroker/amf" 	
+	<mx:ModuleLoader id="loader" applicationDomain="{ApplicationDomain.currentDomain}" 
+	<mx:RemoteObject id="CheckImageEnoughRO" destination="ImageServiceDest" result="CheckImageEnoughRO_resultHandler(event)" 
+	fault="CheckImageEnoughRO_faultHandler(event)" />
+	/>-->
+	
+	<mx:RemoteObject id="JobOperationRO" destination="JobOperationDest" result="JobOperationRO_resultHandler(event)"
+					 fault="JobOperationRO_faultHandler(event)"/>
+	
+	
+	<mx:Form id="secondStep" width="100%" paddingLeft="50" paddingTop="30">
+		<mx:FormItem label="业务名称：" height="30">
+			<mx:Label width="200" id="jobName" text="@{dcModelLocator.curSelectedJob.strJobName}"></mx:Label>
+		</mx:FormItem>
+		<mx:FormItem label="CPU：" id="cpuNum" height="30">
+			<mx:Label width="200" id="cpuNumValue" ></mx:Label>
+		</mx:FormItem>
+		<mx:FormItem label="内存：" height="30">
+			<mx:Label width="200"  id="memoryValue"></mx:Label>
+		</mx:FormItem>
+		<mx:FormItem label="存储：" height="30">
+			<mx:Label width="200" id="storageValue"></mx:Label>
+		</mx:FormItem>
+		<mx:FormItem label="操作系统：" height="30">
+			<mx:Label width="200" id="osType"></mx:Label>
+		</mx:FormItem>
+		<mx:FormItem label="资源申请时间：" height="30">
+			<mx:Label width="200" id="time"></mx:Label>
+		</mx:FormItem>
+		<mx:FormItem label="虚拟机个数：" height="30">
+			<mx:Label width="200" id="vmNum"></mx:Label>
+		</mx:FormItem>
+		
+		<mx:FormItem direction="horizontal" width="100%" paddingTop="20" paddingLeft="-10">
+			<mx:Button id="cancel" label="取消" click="cancel2();"></mx:Button>
+			<mx:Button id="modify" label="修改" click="step_1();"></mx:Button>
+			<mx:Button id="sure" label="确认" click="addVmsToJob();"></mx:Button>
+		</mx:FormItem>
+	</mx:Form>
+	<mx:ControlBar></mx:ControlBar>
+</mx:TitleWindow>	

@@ -1,0 +1,476 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		   xmlns:s="library://ns.adobe.com/flex/spark" 
+		   xmlns:mx="library://ns.adobe.com/flex/mx" width="100%" height="100%"
+		   xmlns:view="lab.view.*" creationComplete="initApp()">
+	<fx:Script>
+		<![CDATA[
+			
+			import flash.events.KeyboardEvent;
+			
+			import lab.events.UserLoginSuccess;
+			import lab.model.DCModelLocator;
+			import lab.valueObject.NetType;
+			import lab.valueObject.User;
+			import lab.view.MainFrame;
+			import lab.view.hostManView;
+			import lab.view.index;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.events.ListEvent;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.utils.URLUtil;
+			import mx.validators.Validator;
+			
+			[Bindable]
+			private var dcModelLocator:DCModelLocator = DCModelLocator.getInstance();
+			private var m_iNetType:int = NetType.PUBLIC_IP;
+			[Bindable]
+			private var m_strUsername:String = new String();
+			[Bindable]
+			private var m_strPass:String = new String();
+			[Bindable]
+			private var m_strCheckCode:String = new String();
+			[Bindable]
+			private var m_userinfo:User = new User();
+			[Bindable]
+			private var acModeList:ArrayCollection;
+			private var NOT_FOUND:int = -1;
+			
+			//在本地测试和外网的环境下，虽然都是向本地的HttpServlet发出请求！
+			//但配置是不同的，因为本地的端口号是8080，而250服务器上的端口号是80.
+			private var m_Request_Url:String = "http://dartcloud.zju.edu.cn/DartCloud/SessionClient";
+//			private var m_Request_Url:String = "http://localhost:8080/DartCloud/SessionClient";
+			//默认的情况下是跳转到这个界面。
+			private var m_strLoginUrl:String = "http://dartcloud.zju.edu.cn/DartCloud/indexView.html";
+//			private var m_strLoginUrl:String = "http://localhost:8080/DartCloud/indexView.html";
+			
+			private var m_strRegisterUrl:String = "http://zuinfo.zju.edu.cn/selfreg.do";
+			
+			//管理员的邮箱！
+			private var m_strAdminEmail:String = "yanhaiming2006@126.com";
+			
+			private var m_strZjuSsoUid:String = "";
+			
+			protected function accessMode_resultHandler(event:ResultEvent):void
+			{
+				acModeList = event.result.ipinfo.node;
+			}
+			private function add_current_user():void
+			{
+				//如果需要向数据库中添加记录，则说明该用户是通过浙大的统一认证系统而且输入的一定是他的学号！
+				m_userinfo.strUserZjuSsoUid = txtUsername.text;
+				m_userinfo.strPassword = txtPassword.text;
+				AddAnUserRO.addAnUser(m_userinfo);
+			}
+			
+			private var m_iMinPassLen:int = 6;//密码的最小长度
+			private function initApp():void
+			{
+				accessMode.send();
+				CheckCode.text=GenerateCheckCode();
+				this.addEventListener(KeyboardEvent.KEY_DOWN,keyDownHandle);
+			}
+			
+			/**
+			 * 回车事件的处理函数
+			 */
+			private function keyDownHandle(event:KeyboardEvent):void
+			{
+				if (event.charCode == 13) // 回车
+				{
+					login();
+				}
+			}
+			
+			/**
+			 * 生成验证码的函数。
+			 */
+			private function GenerateCheckCode():String
+			{
+				var ran:Number;
+				var number:Number;
+				var code:String;
+				var checkCode:String = "";
+				for(var i:int = 0; i < 4; i++)
+				{
+					ran=Math.random();
+					number =Math.round(ran*10000);
+					if(number % 2 == 0)
+					{
+						code = String.fromCharCode(48 + (number % 10));
+					}
+					else
+					{
+						code = String.fromCharCode(65 + (number % 26));
+					}
+					checkCode += code;
+				}
+				return checkCode;
+			}
+			
+			[Bindable]
+			private var LoginResult:String;
+			private function login():void
+			{
+				trace("login......");
+				var errors:Array = Validator.validateAll(validators);
+				
+				if(errors.length > 0 )
+				{
+					trace("输入不合法。。。");
+					Msg.text = "输入不合法！";
+					return;
+				}
+				
+				if(m_strUsername == "" || m_strPass == "" || m_strCheckCode == "")
+				{
+					Msg.text = "请输入完整数据！";
+					return ;
+				}
+				if(CheckCode.text.toLowerCase() != m_strCheckCode.toLowerCase())
+				{
+					Msg.text = "校验码错误！";
+					CheckCode.text=GenerateCheckCode();
+					return ;
+				}
+				
+				//若输入合法，则发出http登录请求！
+				if(isZjuStuId(m_strUsername))
+				{
+					m_strZjuSsoUid = m_strUsername;
+					sendLoginRequest(m_strUsername);
+				}	
+				else
+				{
+					//若输入的是用户的nick_name，则应先获取该用户的zju_sso_uid，即统一用户认证的id；
+					getUserZjuSSoUidRO.getZjuSsoUid(m_strUsername);
+				}
+			}
+
+			/**
+			 * 向服务器发送Http Request,请求登录。
+			 */
+			private function sendLoginRequest(strZjuSsoUid:String):void
+			{
+				//声明一个URLRequest
+				var _request:URLRequest = new URLRequest();
+				
+				//此处的SessionClient映射到src/com/cloud/cda目录下的SessionClient.java，
+				//在WEB-INF目录下的web.xml进行配置。
+				_request.url = m_Request_Url;
+				//声明请求的方法
+				_request.method = URLRequestMethod.POST;
+				
+				//参数设置
+				var _values:URLVariables = new URLVariables();
+				_values.name = encodeURI(strZjuSsoUid);
+				_values.password = encodeURI(m_strPass);
+				_values.type = encodeURI("1");
+				//下面这句话若不注释掉，则会提示登录失败，为什么呢？
+				//_values.module = encodeURI("DataStore");
+				
+				//关联到request
+				_request.data = _values;
+				//声明loader
+				var _urlLoader:URLLoader = new URLLoader();
+				_urlLoader.addEventListener(Event.COMPLETE,requestLoaderHandler);
+				_urlLoader.addEventListener(IOErrorEvent.IO_ERROR,ioErrorHandler);
+				
+				//发送请求
+				_urlLoader.load(_request);
+				getLoginStatusRO.getLoginStatus();
+			}
+			
+			/**
+			 * 请求完成的监听
+			 */
+			public function requestLoaderHandler(event:Event):void{
+				//移除这个监听,为什么要移除这个监听呢？
+				//URLLoader(event.target).removeEventListener(Event.COMPLETE,requestLoaderHandler);
+				//var _obj:Object = URLLoader(event.target).data;
+				var lod:URLLoader = URLLoader(event.target);
+				var _obj:Object = URLUtil.stringToObject(lod.data,";",true);
+				//Alert.show("lod data: " + lod.hasOwnProperty("NAME"));
+				var strZjuSsoUid:String = _obj.ZJU_SSO_UID;
+				//Alert.show("uid: " + strUid);
+				if(null != strZjuSsoUid)
+				{
+					var strUserName:String = txtUsername.text;
+					Alert.show("你已通过浙大统一认证中心的验证，页面正在跳转中......");
+					
+					//登录成功，则说明通过了浙大统一认证系统
+					isUserExistsRO.isUserIdExist(strZjuSsoUid);
+				}	
+				else
+				{
+					CheckCode.text=GenerateCheckCode();
+					Alert.show("用户名或密码错误！");
+				}
+			}
+			
+			/**
+			 * io异常的监听
+			 */
+			public function ioErrorHandler(event:IOErrorEvent):void{
+				//移除这个监听
+				URLLoader(event.target).removeEventListener(Event.COMPLETE,requestLoaderHandler);
+				CheckCode.text=GenerateCheckCode();
+				Alert.show("用户名或密码错误，IO异常！ ");
+			}
+			
+			protected function LoginRO_faultHandler(event:FaultEvent):void
+			{
+				CheckCode.text=GenerateCheckCode();
+			}
+			
+			protected function clickRegisterHandle():void
+			{
+				var request:URLRequest = new URLRequest(m_strRegisterUrl);  
+				navigateToURL(request,"_self"); 
+			}
+			
+			
+			
+			protected function getUserIdRO_resultHandler(event:ResultEvent):void
+			{
+				var iUserId:int = event.result as int;
+				
+				//Alert.show("该用户的iUserId = " + iUserId);
+				var so:SharedObject = SharedObject.getLocal("validate","/");
+				//validate是临时文件
+				so.data.validateResult = true;
+				so.data.iUserId = iUserId;
+				//so.data.strUsername = m_strUsername;
+				//so.data.iNetType = m_iNetType; //用户所选择的网络环境
+				//so.data.curWebServerIp = m_strWebServerIp;
+				//1是要传得值
+				so.flush();
+				
+				var request:URLRequest = new URLRequest(m_strLoginUrl);  
+				navigateToURL(request,"_self"); 
+				
+			}
+			
+			
+			protected function getUserIdRO_faultHandler(event:FaultEvent):void
+			{
+				Alert.show("该用户不存在！" + event.fault.toString());
+			}
+			
+
+
+			protected function txtUsername_focusOutHandler(event:FocusEvent):void
+			{
+				if(null == m_strUsername && m_strUsername.length ==0)
+					usernameMsg.text = "用户名不能为空";
+				else
+					usernameMsg.text = "";
+			}
+
+
+			protected function txtPassword_focusOutHandler(event:FocusEvent):void
+			{
+				if(null == m_strPass && m_strPass.length ==0)
+					passMsg.text = "密码不能为空";
+//				else if(m_strPass.length < m_iMinPassLen)
+//					passMsg.text = "密码的最小长度为" + m_iMinPassLen;
+				else
+					passMsg.text = "";
+			}
+			
+			protected function random_focusOutHandler(event:FocusEvent):void
+			{
+				if(null == m_strCheckCode && m_strCheckCode.length ==0)
+					checkCodeMsg.text = "验证码不能为空";
+				else
+					checkCodeMsg.text = "";
+			}
+			
+			/**
+			 * 用户选取网络环境。
+			 * 
+			 * 0表示外网；1表示校园网；2表示局域网；3表示本地；
+			 * 
+			 */
+			protected function comAccessMode_changeHandler(event:ListEvent):void
+			{
+				/*
+				m_iNetType = comAccessMode.value as int;
+				
+				if(m_iNetType != 3)
+				{
+					m_strLoginUrl = "http://dartcloud.zju.edu.cn/DartCloud/indexView.html";
+				}
+				else//如果是选择本地
+				{
+					m_strLoginUrl = "http://localhost:8080/DartCloud/indexView.html";
+				}	
+				*/
+				
+			}
+
+
+			protected function AddAnUserRO_resultHandler(event:ResultEvent):void
+			{
+				var bAddRes:Boolean = event.result as Boolean;
+				trace("注册结果： " + bAddRes);
+				
+				if(false == bAddRes)//若数据库添加用户失败
+					Alert.show("数据库添加新用户发生失败，请重试！");
+				else
+				{
+					//在数据库中添加了相应的用户信息之后，便可以加载用户的信息了。
+					var strUserName:String = txtUsername.text;
+					getUserIdRO.getUserId(strUserName);
+				
+				}
+			}
+
+
+			protected function AddAnUserRO_faultHandler(event:FaultEvent):void
+			{
+				trace("注册失败！" + event.toString(), 'Error');
+			}
+
+			protected function isUserExists_resultHandler(event:ResultEvent):void
+			{
+				var bIsUserExist:Boolean = event.result as Boolean;
+				if(false == bIsUserExist) //若数据库中不存在此用户的信息，则应该先在数据库中添加该用户；
+				{
+					add_current_user();
+				}	
+				else//若数据库中已存在该用户，则直接加载该用户的信息；
+				{
+					//在数据库中添加了相应的用户信息之后，便可以加载用户的信息了。
+					getUserIdRO.getUserId(m_strZjuSsoUid);
+				}
+			}
+
+
+			protected function isUserExists_faultHandler(event:FaultEvent):void
+			{
+			}
+
+
+			protected function getLoginStatusRO_resultHandler(event:ResultEvent):void
+			{
+				var bLoginRes:Boolean = event.result as Boolean;
+			}
+
+
+			protected function getLoginStatusRO_faultHandler(event:FaultEvent):void
+			{
+			}
+			
+			/**
+			 * 判断输入的用户名是否为学号(全部为0-9的数字)，若是则返回true,否则返回false
+			 * strUserName
+			 */
+			private function isZjuStuId(strUserName:String):Boolean
+			{
+				if(strUserName.length == 0)
+					return false;
+				for(var i:int=0; i<strUserName.length; i++)
+					if((strUserName.charAt(i)<'0') || (strUserName.charAt(i)>'9'))
+						return false;
+				return true;
+			}
+
+
+			protected function getUserZjuSSoUidRO_resultHandler(event:ResultEvent):void
+			{
+				var strUserZjuSsoUid:String = event.result as String;
+				m_strZjuSsoUid = strUserZjuSsoUid;
+				//发起http请求
+				sendLoginRequest(strUserZjuSsoUid);
+			}
+
+
+			protected function getUserZjuSSoUidRO_faultHandler(event:FaultEvent):void
+			{
+				Alert.show("登录出错，请联系管理员！" + m_strAdminEmail);
+			}
+
+		]]>
+	</fx:Script>
+	
+	<fx:Metadata>
+		[Event(name="loginSuccess", type="flash.events.Event")]
+		[Event(name="register", type="flash.events.Event")]
+	</fx:Metadata>	
+	
+	<fx:Declarations>
+		
+		
+		
+		<mx:HTTPService id="accessMode" url="data/NetType.xml" result="accessMode_resultHandler(event)"/>
+		
+		<fx:Array id="validators">
+			<mx:StringValidator source="{txtUsername}" property="text" required="true" minLength="1" />
+			<mx:StringValidator source="{txtPassword}" property="text" required="true" minLength="1" />
+		</fx:Array>
+		
+		
+		<mx:RemoteObject id = "getUserIdRO"
+						 destination = "UserServiceDest" result="getUserIdRO_resultHandler(event)" fault="getUserIdRO_faultHandler(event)"/>
+		
+		
+		<mx:RemoteObject id="AddAnUserRO" destination="UserServiceDest"
+						 result="AddAnUserRO_resultHandler(event)" fault="AddAnUserRO_faultHandler(event)" />
+		<mx:RemoteObject id="isUserExistsRO"
+						 destination="UserServiceDest" result="isUserExists_resultHandler(event)"
+						 fault="isUserExists_faultHandler(event)" />
+		<mx:RemoteObject id="getLoginStatusRO" destination="SessionClientDest"
+						 result="getLoginStatusRO_resultHandler(event)" fault="getLoginStatusRO_faultHandler(event)" />
+		<mx:RemoteObject id="getUserZjuSSoUidRO" destination="UserServiceDest" result="getUserZjuSSoUidRO_resultHandler(event)"
+						 fault="getUserZjuSSoUidRO_faultHandler(event)" />
+	</fx:Declarations>
+	
+	
+	<mx:Panel id="loginPanel"
+			  title="用户登录     请用浙大统一身份认证账号进行登录！" width="40%" height="40%">
+		<mx:Form id="loginForm" color="0x323232" width="100%" height="100%">
+			<mx:FormItem label="用户名:" required="true" direction="horizontal">
+				<mx:TextInput id = "txtUsername" text="@{m_strUsername}" focusOut="txtUsername_focusOutHandler(event)"/>
+				<mx:Label id="usernameMsg" text="" color="red"/>
+			</mx:FormItem>
+			<mx:FormItem label="密   码:" required="true" direction="horizontal">
+				<mx:TextInput id="txtPassword" displayAsPassword="true" text="@{m_strPass}"
+							  focusOut="txtPassword_focusOutHandler(event)"/>
+				<mx:Label id="passMsg" text="" color="red"/>
+			</mx:FormItem>
+			
+			<!--
+			<mx:FormItem label="选择网络环境:" required="true" direction="horizontal">
+				<mx:ComboBox width="99" id="comAccessMode"  dataProvider="{acModeList}" change="comAccessMode_changeHandler(event)" 
+							 labelField="label"></mx:ComboBox>
+				<mx:Label text="外单位网络环境请选择外网，否则无法正常使用！" color="red"/>
+			</mx:FormItem>
+			-->
+		
+			<mx:FormItem label="校验码:"  direction="horizontal" required="true">
+				<mx:TextInput id="random" maxChars="4" text="@{m_strCheckCode}" focusOut="random_focusOutHandler(event)"/>
+				<mx:Label id="CheckCode" width="42.5" color="#377CD0" height="20"/>
+				<mx:LinkButton label="看不清楚?" id="linkbtnReGenerate" click="CheckCode.text=GenerateCheckCode();"/>
+				<mx:Label id="checkCodeMsg" color="red"/>
+			</mx:FormItem>
+			
+			<mx:FormItem >
+				<mx:Label id="Msg" color="red"/>
+			</mx:FormItem>
+			
+		</mx:Form>
+		<mx:ControlBar color="0x323232" >
+			<mx:LinkButton id="registerLink"
+						   label="新用户注册" 
+						   click="clickRegisterHandle();"/>
+			<mx:Spacer width="100%" id="spacer1"/>
+			<mx:Button label="登录" id="loginButton" click = "login()" />
+		</mx:ControlBar>
+		
+	</mx:Panel>
+		
+</mx:Canvas>

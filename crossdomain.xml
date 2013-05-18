@@ -1,0 +1,6 @@
+﻿<?xml version="1.0"?>
+<!-- http://www.foo.com/crossdomain.xml -->
+<cross-domain-policy>
+    <allow-access-from domain="*"/>
+	<allow-http-request-headers-from domain="*" headers="*"/>
+</cross-domain-policy>

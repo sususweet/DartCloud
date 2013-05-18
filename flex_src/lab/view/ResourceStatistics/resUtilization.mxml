@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" creationComplete="canvas1_creationCompleteHandler(event)">
+	<mx:Script>
+		<![CDATA[
+			import lab.model.DCModelLocator;
+			
+			import mx.collections.ArrayCollection;
+			import mx.events.FlexEvent;
+			import mx.events.ListEvent;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			
+			
+			//***********获得DCModelLocator的唯一实例，以此获得当前活动用户的用户ID******************
+			//单例，全局变量；程序运行时可能用到的一些配置信息。
+			[Bindable]
+			private var dcModelLocator:DCModelLocator = DCModelLocator.getInstance();
+			[Bindable]
+			private var userid:int = dcModelLocator.m_user.iUserId;
+			
+			//private var dcModelLocator:DCModelLocator = DCModelLocator.getInstance();
+			//private var userid:int = dcModelLocator.user.userId;
+			
+			
+			protected function canvas1_creationCompleteHandler(event:FlexEvent):void//页面加载完成，从后台读取job_info数据库
+			{
+				// TODO Auto-generated method stub
+				showJobRO.showJobByUserId(userid);
+			}
+			
+			//**************showJobRO获取Job列表*******************************************done!
+			[Bindable]
+			public var businesses:ArrayCollection;//job列表的数据源
+			
+			protected function showJobRO_resultHandler(result:Object):void
+			{
+				businesses = result as ArrayCollection;
+			}
+			
+			
+			//*************用户选择了job列表中的某一业务，需要更新vm列表*******************************
+			protected function combobox1_changeHandler(event:ListEvent):void//job列表选择动作触发
+			{
+				// TODO Auto-generated method stub
+				var jobId:int = businesses[event.target.selectedIndex].jobId;
+				showVMRO.showVMByJobId(jobId);
+			}
+			
+			[Bindable]
+			public var vms:ArrayCollection;//VM列表的数据源
+			
+			protected function showVMRO_resultHandler(result:Object):void
+			{
+				vms = result as ArrayCollection;
+			}
+			
+			
+			
+			//********************************点击导出结果按钮，第一步：通过vm-id找到虚拟机IP
+			
+			public var vmId:int;
+			protected function combobox2_changeHandler(event:ListEvent):void//当选择某一个虚拟机时，同时更新当前记录被选中虚拟机的ID值，以便后面使用
+			{
+				// TODO Auto-generated method stub
+				vmId = vms[event.target.selectedIndex].jobId;
+			}
+			
+			protected function button1_clickHandler(event:MouseEvent):void//点击按钮，开始统计并导出结果
+			{
+				// TODO Auto-generated method stub
+				//findVMIPRO.oneVmId2IP(vmId);
+				vmIP = "192.168.0.130";
+				//vmIP = event.result as String;//获取IP成功，开始通过IP获取rrd文件数据
+				VMCPUDataFetchRO.fetchVMCPU(vmIP);//访问ganglia，读取rrd
+			}
+			
+			public var vmIP:String;
+			protected function findVMIPRO_resultHandler(result:Object):void//获取IP
+			{
+				// TODO Auto-generated method stub
+				vmIP = "192.168.0.130";
+				//vmIP = event.result as String;//获取IP成功，开始通过IP获取rrd文件数据
+				VMCPUDataFetchRO.fetchVMCPU(vmIP);//访问ganglia，读取rrd
+			}
+			
+			[Bindable]
+			public var cpuUtilization:ArrayCollection;//VMCPU的数据源
+			protected function VMCPUDataFetchRO_resultHandler(result:Object):void
+			{
+				// TODO Auto-generated method stub
+				cpuUtilization = result as ArrayCollection;
+			}
+			
+			
+			/*上面都是关于CPU统计的AS代码，下面开始MEMORY*/
+			protected function button2_clickHandler(event:MouseEvent):void//点击按钮，开始统计并导出结果
+			{
+				// TODO Auto-generated method stub
+				//findVMIPRO.oneVmId2IP(vmId);
+				vmIP = "192.168.0.130";
+				//vmIP = event.result as String;//获取IP成功，开始通过IP获取rrd文件数据
+				VMMemoryDataFetchRO.fetchVMMemory(vmIP);//访问ganglia，读取rrd
+			}
+			
+			[Bindable]
+			public var memoryUtilization:ArrayCollection;//VMCPU的数据源
+			protected function VMMemoryDataFetchRO_resultHandler(result:Object):void
+			{
+				// TODO Auto-generated method stub
+				memoryUtilization = result as ArrayCollection;
+			}
+			
+			
+			/*上面都是关于MEMORY统计的AS代码，下面开始STORAGE*/
+			protected function button3_clickHandler(event:MouseEvent):void//点击按钮，开始统计并导出结果
+			{
+				// TODO Auto-generated method stub
+				//findVMIPRO.oneVmId2IP(vmId);
+				vmIP = "192.168.0.130";
+				//vmIP = event.result as String;//获取IP成功，开始通过IP获取rrd文件数据
+				VMStorageDataFetchRO.fetchVMStorage(vmIP);//访问ganglia，读取rrd
+			}
+			
+			[Bindable]
+			public var storageUtilization:ArrayCollection;//VMCPU的数据源
+			protected function VMStorageDataFetchRO_resultHandler(result:Object):void
+			{
+				// TODO Auto-generated method stub
+				storageUtilization = result as ArrayCollection;
+			}
+
+		]]>
+	</mx:Script>
+	
+	
+	<mx:RemoteObject id = "showJobRO" destination = "ResUtilization_ShowJobAndVMDest" result = "showJobRO_resultHandler(event.result)" />
+	<mx:RemoteObject id = "showVMRO" destination = "ResUtilization_ShowJobAndVMDest" result = "showVMRO_resultHandler(event.result)" />
+	<mx:RemoteObject id = "findVMIPRO" destination = "resMonitorDest" result="findVMIPRO_resultHandler(event.result)" /><!--这个RO只用来获取虚拟机IP-->
+	<mx:RemoteObject id = "VMCPUDataFetchRO" destination = "VMCPUDataFetchDest" result="VMCPUDataFetchRO_resultHandler(event.result)"/>
+	
+	<mx:RemoteObject id = "VMMemoryDataFetchRO" destination = "VMMemoryDataFetchDest" result="VMMemoryDataFetchRO_resultHandler(event.result)"/>
+	
+	<mx:RemoteObject id = "VMStorageDataFetchRO" destination = "VMStorageDataFetchDest" result="VMStorageDataFetchRO_resultHandler(event.result)"/>
+	
+		
+	<!-- Define custom Strokes. -->
+	<mx:SolidColorStroke id = "s1" color="blue" weight="2"/>
+	<mx:SolidColorStroke id = "s2" color="yellow" weight="2"/>
+	<mx:SolidColorStroke id = "s3" color="green" weight="2"/>
+	
+	<mx:states>
+		<mx:State name = "CPU">
+			<mx:AddChild position = "lastChild">
+				<mx:VBox width="100%" height="100%" horizontalAlign="center" paddingBottom="20">
+					<mx:HBox width="100%" height="75" paddingLeft="20" paddingRight="20">
+						<mx:HBox width="180" height="100%" paddingLeft="20" paddingTop="30">
+							<mx:Label text="业务"></mx:Label>
+							<mx:ComboBox dataProvider="{businesses}" labelField="jobName" width="100" fontSize="11" prompt="选择业务" selectedIndex="-1" change="combobox1_changeHandler(event)"></mx:ComboBox>
+						</mx:HBox>
+						<mx:HBox width="180" height="100%" paddingLeft="20" paddingTop="30">
+							<mx:Label text="VM"></mx:Label>
+							<mx:ComboBox dataProvider="{vms}" labelField="vmName" width="100" fontSize="11" prompt="选择虚拟机" selectedIndex="-1" change="combobox2_changeHandler(event)"></mx:ComboBox>
+						</mx:HBox>
+						<!--<mx:HBox width="180" height="100%" paddingLeft="20" paddingTop="30">
+							<mx:Label text="开始时间"></mx:Label>
+							<mx:DateField/>
+						</mx:HBox>
+						<mx:HBox width="180" height="100%" paddingLeft="20" paddingTop="30">
+							<mx:Label text="结束时间"></mx:Label>
+							<mx:DateField/>
+						</mx:HBox>
+						<mx:HBox width="180" height="100%" paddingLeft="20" paddingTop="30">
+							<mx:Label text="粒度"></mx:Label>
+							<mx:ComboBox dataProvider="{granularity}" width="100" ></mx:ComboBox>
+						</mx:HBox>-->
+						<mx:HBox width="180" height="100%" paddingTop="30" horizontalAlign="center">
+							<mx:Button width="100" label="导出结果" click="button1_clickHandler(event)"></mx:Button>
+						</mx:HBox>
+					</mx:HBox>
+					<mx:VBox width="95%" height="95%" horizontalAlign="center" borderStyle="solid" paddingTop="10" paddingBottom="10">
+						<!--<mx:Label width="100%" text="2010年上半年各部门CPU利用率(百分比)统计" textAlign="center"
+								  color="blue" fontFamily="宋体" fontSize="14" fontWeight="bold"></mx:Label>-->
+						<mx:LineChart id="linechart" dataProvider= "{cpuUtilization}" height="100%" width="100%" showDataTips="true" fontSize="12" fontFamily="宋体">
+							
+							<mx:horizontalAxis>
+								<mx:CategoryAxis categoryField="cpu_TimeStamp" title="CPU利用率统计【单位：百分比】"/>
+							</mx:horizontalAxis>
+							
+							<mx:series>
+								<mx:LineSeries xField="cpu_TimeStamp" yField="cpu_Idle" form="segment" displayName="CPU空闲比" lineStroke="{s1}"/>
+								<mx:LineSeries xField="cpu_TimeStamp" yField="cpu_User" form="segment" displayName="CPU用户使用比" lineStroke="{s2}"/>
+								<mx:LineSeries xField="cpu_TimeStamp" yField="cpu_System" form="segment" displayName="CPU系统使用比" lineStroke="{s3}"/>
+							</mx:series>
+						</mx:LineChart>
+						<mx:VBox borderStyle="solid">
+							<mx:Legend height="25" dataProvider="{linechart}"/>
+						</mx:VBox>
+					</mx:VBox>
+				</mx:VBox>
+			</mx:AddChild>
+		</mx:State>
+		
+		<mx:State name = "MEMORY">
+			<mx:AddChild position = "lastChild">
+				<mx:VBox width="100%" height="100%" horizontalAlign="center" paddingBottom="20">
+					<mx:HBox width="100%" height="75" paddingLeft="20" paddingRight="20">
+						<mx:HBox width="180" height="100%" paddingLeft="20" paddingTop="30">
+							<mx:Label text="业务"></mx:Label>
+							<mx:ComboBox dataProvider="{businesses}" labelField="jobName" width="100" fontSize="11" prompt="选择业务" selectedIndex="-1" change="combobox1_changeHandler(event)"></mx:ComboBox>
+						</mx:HBox>
+						<mx:HBox width="180" height="100%" paddingLeft="20" paddingTop="30">
+							<mx:Label text="VM"></mx:Label>
+							<mx:ComboBox dataProvider="{vms}" labelField="vmName" width="100" fontSize="11" prompt="选择虚拟机" selectedIndex="-1" change="combobox2_changeHandler(event)"></mx:ComboBox>
+						</mx:HBox>
+						<!--<mx:HBox width="180" height="100%" paddingLeft="20" paddingTop="30">
+						<mx:Label text="开始时间"></mx:Label>
+						<mx:DateField/>
+						</mx:HBox>
+						<mx:HBox width="180" height="100%" paddingLeft="20" paddingTop="30">
+						<mx:Label text="结束时间"></mx:Label>
+						<mx:DateField/>
+						</mx:HBox>
+						<mx:HBox width="180" height="100%" paddingLeft="20" paddingTop="30">
+						<mx:Label text="粒度"></mx:Label>
+						<mx:ComboBox dataProvider="{granularity}" width="100" ></mx:ComboBox>
+						</mx:HBox>-->
+						<mx:HBox width="180" height="100%" paddingTop="30" horizontalAlign="center">
+							<mx:Button width="100" label="导出结果" click="button2_clickHandler(event)"></mx:Button>
+						</mx:HBox>
+					</mx:HBox>
+					<mx:VBox width="95%" height="95%" horizontalAlign="center" borderStyle="solid" paddingTop="10" paddingBottom="10">
+						<!--<mx:Label width="100%" text="2010年上半年各部门CPU利用率(百分比)统计" textAlign="center"
+						color="blue" fontFamily="宋体" fontSize="14" fontWeight="bold"></mx:Label>-->
+						<mx:LineChart id="linechart1" dataProvider= "{memoryUtilization}" height="100%" width="100%" showDataTips="true" fontSize="12" fontFamily="宋体">
+							
+							<mx:horizontalAxis>
+								<mx:CategoryAxis categoryField="memory_TimeStamp" title="内存利用统计【单位：百分比】"/>
+							</mx:horizontalAxis>
+							
+							<mx:series>
+								<mx:LineSeries xField="memory_TimeStamp" yField="memory_Free" form="segment" displayName="内存空闲" lineStroke="{s1}"/>
+								<mx:LineSeries xField="memory_TimeStamp" yField="memory_Total" form="segment" displayName="内存总数" lineStroke="{s2}"/>
+							</mx:series>
+						</mx:LineChart>
+						<mx:VBox borderStyle="solid">
+							<mx:Legend height="25" dataProvider="{linechart1}"/>
+						</mx:VBox>
+					</mx:VBox>
+				</mx:VBox>
+			</mx:AddChild>
+		</mx:State>
+		
+		<mx:State name = "STORAGE">
+			<mx:AddChild position = "lastChild">
+				<mx:VBox width="100%" height="100%" horizontalAlign="center" paddingBottom="20">
+					<mx:HBox width="100%" height="75" paddingLeft="20" paddingRight="20">
+						<mx:HBox width="180" height="100%" paddingLeft="20" paddingTop="30">
+							<mx:Label text="业务"></mx:Label>
+							<mx:ComboBox dataProvider="{businesses}" labelField="jobName" width="100" fontSize="11" prompt="选择业务" selectedIndex="-1" change="combobox1_changeHandler(event)"></mx:ComboBox>
+						</mx:HBox>
+						<mx:HBox width="180" height="100%" paddingLeft="20" paddingTop="30">
+							<mx:Label text="VM"></mx:Label>
+							<mx:ComboBox dataProvider="{vms}" labelField="vmName" width="100" fontSize="11" prompt="选择虚拟机" selectedIndex="-1" change="combobox2_changeHandler(event)"></mx:ComboBox>
+						</mx:HBox>
+						<!--<mx:HBox width="180" height="100%" paddingLeft="20" paddingTop="30">
+						<mx:Label text="开始时间"></mx:Label>
+						<mx:DateField/>
+						</mx:HBox>
+						<mx:HBox width="180" height="100%" paddingLeft="20" paddingTop="30">
+						<mx:Label text="结束时间"></mx:Label>
+						<mx:DateField/>
+						</mx:HBox>
+						<mx:HBox width="180" height="100%" paddingLeft="20" paddingTop="30">
+						<mx:Label text="粒度"></mx:Label>
+						<mx:ComboBox dataProvider="{granularity}" width="100" ></mx:ComboBox>
+						</mx:HBox>-->
+						<mx:HBox width="180" height="100%" paddingTop="30" horizontalAlign="center">
+							<mx:Button width="100" label="导出结果" click="button3_clickHandler(event)"></mx:Button>
+						</mx:HBox>
+					</mx:HBox>
+					<mx:VBox width="95%" height="95%" horizontalAlign="center" borderStyle="solid" paddingTop="10" paddingBottom="10">
+						<!--<mx:Label width="100%" text="2010年上半年各部门CPU利用率(百分比)统计" textAlign="center"
+						color="blue" fontFamily="宋体" fontSize="14" fontWeight="bold"></mx:Label>-->
+						<mx:LineChart id="linechart2" dataProvider= "{storageUtilization}" height="100%" width="100%" showDataTips="true" fontSize="12" fontFamily="宋体">
+							
+							<mx:horizontalAxis>
+								<mx:CategoryAxis categoryField="storage_TimeStamp" title="存储利用统计【单位：百分比】"/>
+							</mx:horizontalAxis>
+							
+							<mx:series>
+								<mx:LineSeries xField="storage_TimeStamp" yField="storage_Free" form="segment" displayName="存储空闲" lineStroke="{s1}"/>
+								<mx:LineSeries xField="storage_TimeStamp" yField="storage_Total" form="segment" displayName="存储总数" lineStroke="{s2}"/>
+							</mx:series>
+						</mx:LineChart>
+						<mx:VBox borderStyle="solid">
+							<mx:Legend height="25" dataProvider="{linechart2}"/>
+						</mx:VBox>
+					</mx:VBox>
+				</mx:VBox>
+			</mx:AddChild>
+		</mx:State>
+	</mx:states>
+</mx:Canvas>

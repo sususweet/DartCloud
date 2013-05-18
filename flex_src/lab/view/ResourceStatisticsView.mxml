@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" paddingTop="20" paddingBottom="20" paddingRight="20" paddingLeft="20"
+		 xmlns:flexlib="http://code.google.com/p/flexlib/" xmlns:ResourceStatistics1="lab.view.ResourceStatistics.*"
+		 xmlns:view="lab.view.*" >
+	<mx:Script>
+		<![CDATA[
+			import mx.events.ListEvent;
+			//点击资源利用率
+			private function utilization():void{
+				resourceTree2.visible = false;
+				resourceTree1.visible = true;
+				viewStack.selectedIndex = 0;
+			}
+			
+			//点击资源地域分布
+			private function distribution():void{
+				resourceTree1.visible = false;
+				resourceTree2.visible = true;
+				viewStack.selectedIndex = 1;
+			}
+			
+			protected function resourceTree1_changeHandler(event:ListEvent):void
+			{
+				// TODO Auto-generated method stub
+				var selectedNode:XML = Tree(event.target).selectedItem as XML;
+				
+				var selectedIndex:int = selectedNode.@id;
+				var strSelectedLabel:String = selectedNode.@label;
+				
+				switch(strSelectedLabel)
+				{
+					case "CPU":{resUtilization.currentState = "CPU"; break;}
+					case "内存":{resUtilization.currentState = "MEMORY"; break;}
+					case "存储":{resUtilization.currentState = "STORAGE"; break;}
+				}
+			}
+			
+			protected function resourceTree2_changeHandler(event:ListEvent):void
+			{
+				// TODO Auto-generated method stub
+				var selectedNode:XML = Tree(event.target).selectedItem as XML;
+				
+				var selectedIndex:int = selectedNode.@id;
+				var strSelectedLabel:String = selectedNode.@label;
+				
+				switch(strSelectedLabel)
+				{
+					case "CPU":{resGeoDistribution.currentState = "CPU"; break;}
+					case "内存":{resGeoDistribution.currentState = "MEMORY"; break;}
+					case "存储":{resGeoDistribution.currentState = "STORAGE"; break;}
+				}
+			}
+			
+		]]>
+	</mx:Script>
+	
+	<mx:XMLList id="resourceData">
+		<node label="资源">
+			<node label="CPU"/>
+			<node label="内存"/>
+			<node label="存储"/>
+			<node label="IO"/>
+			<node label="网络"/>
+			<node label="负载"/>
+		</node>
+	</mx:XMLList>
+	
+	<mx:VBox width="150" height="100%">
+		<mx:Button width="100%" label="资源利用率" click="{utilization(); resourceTree2.width = 0; resourceTree2.height = 0; resourceTree1.width = 100; resourceTree1.height = 200;}"></mx:Button>
+		<mx:Tree id="resourceTree1" width="100%" height="200" visible="true"
+				 labelField="@label" iconField="@icon" showRoot="false" dataProvider="{resourceData}"
+				 change="resourceTree1_changeHandler(event)"/>
+		<mx:Button width="100%" label="资源地域分布" click="{distribution(); resourceTree1.width = 0; resourceTree1.height = 0; resourceTree2.width = 100; resourceTree2.height = 200;}"></mx:Button>
+		<mx:Tree id="resourceTree2" width="100%" height="200" visible="false"
+				 labelField="@label" iconField="@icon" showRoot="false" dataProvider="{resourceData}"
+				 change="resourceTree2_changeHandler(event)"/>
+	</mx:VBox>
+	
+	<mx:ViewStack id="viewStack" width="100%" height="100%" selectedIndex="0" borderStyle="solid">
+		<ResourceStatistics1:resUtilization id="resUtilization" />
+		<ResourceStatistics1:resGeoDistribution id="resGeoDistribution" />
+	</mx:ViewStack>
+</mx:HBox>

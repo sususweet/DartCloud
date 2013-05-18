@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!--
+*	id: 任务id, taskname: 任务名称
+-->
+<res>
+	<item id='0' taskname='南方灾害' type='应急'/>
+	<item id='1' taskname='水资源监测' type='监测'/>
+	<item id='2' taskname='水资源监测' type='监测'/>
+	<item id='3' taskname='水资源监测' type='监测'/>
+	<item id='4' taskname='水资源监测' type='监测'/>
+	<item id='5' taskname='水资源监测' type='监测'/>
+	<item id='6' taskname='水资源监测' type='监测'/>
+	<item id='7' taskname='水资源监测' type='普查'/>
+	<item id='8' taskname='水资源监测' type='普查'/>
+	<errormessage></errormessage>
+</res>

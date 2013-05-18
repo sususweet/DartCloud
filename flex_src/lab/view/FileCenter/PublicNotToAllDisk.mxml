@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		   xmlns:s="library://ns.adobe.com/flex/spark" 
+		   xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:dg="dg.*" creationComplete="canvas1_creationCompleteHandler(event)">
+	
+	<fx:Script>
+		<![CDATA[
+			import dg.myadg.CheckBoxHeaderRenderer;
+			import dg.myadg.CheckBoxItemRenderer;
+			import dg.myadg.CheckboxColumn;
+			
+			import lab.model.DCModelLocator;
+			
+			import mx.collections.ArrayCollection;
+			import mx.events.FlexEvent;
+			import mx.messaging.AbstractConsumer;
+			import mx.rpc.events.ResultEvent;
+			
+			internal var dcModelLocator:DCModelLocator = DCModelLocator.getInstance();
+			
+			
+			[Bindable]
+			public var publicNotToAllFileInfo:ArrayCollection;
+			protected function publicFileInfoRO_resultHandler(event:ResultEvent):void
+			{
+				// TODO Auto-generated method stub
+				publicNotToAllFileInfo = event.result as ArrayCollection;
+			}
+			protected function button1_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				var publicNotToAllFiles:ArrayCollection = new ArrayCollection();//将文件打包
+				var strDownloadBaseUrl:String = "http://" + dcModelLocator.webServerIp + "/mupload/upload/";
+				//var strDownloadBaseUrl:String = "http://localhost:8080" +  + "/mupload/upload/";
+				var selectedArray:Array = publicNotToAllDataGrid.getSelectedItem();
+				for(var i:int = 0; i < selectedArray.length; i ++)
+				{
+					publicNotToAllFiles.addItem(selectedArray[i].file_Name);
+				}
+				if(publicNotToAllFiles.length >= 1)
+				{
+					DownloadZipFileRO.packageFiles(publicNotToAllFiles, "PublicNotToAll", str);//公有盘打包
+				}
+			}
+			
+			protected function DownloadZipFileRO_resultHandler(event:ResultEvent):void
+			{
+				// TODO Auto-generated method stub
+				var strDownloadBaseUrl:String = "http://" + dcModelLocator.webServerIp + "/mupload/upload/";
+				//navigateToURL(new URLRequest(strDownloadBaseUrl + "publicspace/" + publicFileInfo[i].fileName), "下载窗口" + i);
+				var downloadZipName:String = event.result as String;
+				var finalDownloadLink:String = strDownloadBaseUrl + "zipStore/" + downloadZipName;
+				navigateToURL(new URLRequest(finalDownloadLink), "_blank");	
+			}
+			
+			private var publicColumns:Array = new Array();
+			protected function publicDataGrid_initializeHandler(event:FlexEvent):void
+			{
+				// TODO Auto-generated method stub
+				if(publicNotToAllDataGrid.hasCheck)
+				{
+					var checkColumn:CheckboxColumn = new CheckboxColumn();
+					checkColumn.itemRenderer = new ClassFactory(CheckBoxItemRenderer);
+					checkColumn.headerRenderer = new ClassFactory(CheckBoxHeaderRenderer);
+					checkColumn.dataField = "dgSelected";
+					checkColumn.sortable = false;
+					checkColumn.width = 25;
+					publicColumns.push(checkColumn);
+				}
+			}
+			
+			protected function publicDataGrid_creationCompleteHandler(event:FlexEvent):void
+			{
+				// TODO Auto-generated method stub
+				if(publicNotToAllDataGrid.columns.length > 0)
+				{
+					for(var j: int = 0; j < publicNotToAllDataGrid.columns.length; j ++)
+					{
+						if(publicNotToAllDataGrid.columns[j].dataField != null)
+						{
+							publicColumns.push(publicNotToAllDataGrid.columns[j]);
+						}
+					}
+				}
+				publicNotToAllDataGrid.columns = publicColumns;
+			}
+			
+			
+			
+			protected function canvas1_creationCompleteHandler(event:FlexEvent):void
+			{
+				// TODO Auto-generated method stub
+				publicNotToAllFileInfoRO.getPublicFileList("public_not_to_all"); 
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+		<mx:RemoteObject id="publicNotToAllFileInfoRO" destination="DownlodDest" result="publicFileInfoRO_resultHandler(event)" />
+		<mx:RemoteObject id="DownloadZipFileRO" destination="DownlodDest" result="DownloadZipFileRO_resultHandler(event)"/>
+		<fx:String id="str"/>
+	</fx:Declarations>
+	<mx:Label text="协同共享盘内容：" x="36" y="0" fontWeight="bold"/>
+	<mx:Button x="360" y="0" label="下载" click="button1_clickHandler(event)"/>
+	
+	<dg:AdvancedDataGrid x="0" y="60" id="publicNotToAllDataGrid" width="1125" height="400"
+						 variableRowHeight="true" rowHeight="25" sortExpertMode="true"
+						 selectable="false"
+						 hasCheck="true" dataProvider="{publicNotToAllFileInfo}" sortableColumns="true"
+						 initialize="publicDataGrid_initializeHandler(event)"
+						 creationComplete="publicDataGrid_creationCompleteHandler(event)">
+		<dg:columns>
+			<mx:AdvancedDataGridColumn dataField="file_Name"
+									   headerText="文件名称"
+									   fontWeight="bold"
+									   textAlign="center"
+									   width="400" />
+			<mx:AdvancedDataGridColumn dataField="file_Size"
+									   headerText="文件大小"
+									   fontWeight="bold"
+									   textAlign="center"
+									   width="100" />
+			<mx:AdvancedDataGridColumn dataField="file_Time"
+									   headerText="上传时间"
+									   fontWeight="bold"
+									   textAlign="center"
+									   width="200" />
+			<mx:AdvancedDataGridColumn dataField="file_Owner"
+									   headerText="上传者"
+									   fontWeight="bold"
+									   textAlign="center"
+									   width="100" />
+			<mx:AdvancedDataGridColumn dataField="file_Category"
+									   headerText="文件类别"
+									   fontWeight="bold"
+									   textAlign="center"
+									   width="100" />
+			<mx:AdvancedDataGridColumn dataField="file_Description"
+									   headerText="文件描述"
+									   fontWeight="bold"
+									   width="200" editable="false">
+				<mx:itemRenderer>
+					<fx:Component>
+						<mx:HBox horizontalAlign="center">
+							<mx:TextArea width="196" height="100"
+										 verticalScrollPolicy="auto"
+										 horizontalScrollPolicy="off"
+										 wordWrap="true"
+										 editable="false"
+										 text="{data.file_Description}" />
+						</mx:HBox>
+					</fx:Component>
+				</mx:itemRenderer>
+			</mx:AdvancedDataGridColumn>
+		</dg:columns>
+		
+	</dg:AdvancedDataGrid>
+</mx:Canvas>

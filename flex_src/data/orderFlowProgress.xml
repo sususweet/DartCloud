@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!--
+*	stepid: 大流程步骤id, total: 预计总时间, remain: 剩余时间, status: 步骤状态, totalusage: 资源总使用率, taskusage: 该任务的资源占用率
+*	log: 日志信息
+-->
+<res>
+	<item stepid='1' total='20' remain='0' status='2' totalusage='0.7' taskusage='0.1'/>
+	<item stepid='4' total='10' remain='0' status='2' totalusage='0.7' taskusage='0.1'/>
+	<item stepid='5' total='20' remain='10' status='1' totalusage='0.98' taskusage='0.3'/>
+	<item stepid='8' total='10' remain='10' status='0' totalusage='0.93' taskusage='0.3'/>
+	<item stepid='9' total='20' remain='20' status='0' totalusage='0.7' taskusage='0.1'/>
+	<item stepid='12' total='10' remain='10' status='0' totalusage='0.7' taskusage='0.1'/>
+	<log>步骤名 类型 执行者 时间</log>
+	<errormessage></errormessage>
+</res>

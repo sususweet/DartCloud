@@ -1,0 +1,35 @@
+﻿<root >
+	<node id="0" label="工程中心" name="grid0" type="0">		
+		<node id="0_0" label="集群1"  name="cluster0" type="1">
+			<node id="0_0_0" label="HPC1"  name="host1" type="2"  />
+			<node id="0_0_1" label="HPC2"  name="host2" type="2"  />
+			<node id="0_0_2" label="HPC3"  name="host3" type="2" />
+		</node>
+		<node id="0_1" label="集群2" name="cluster1" type="1">
+			<node id="0_1_0" label="HPC1"  type="2"  />
+			<node id="0_1_1" label="HPC2"  type="2"  />
+		</node>
+	</node>
+	<node id="1" label="资源卫星中心" type="0">		
+		<node id="1_1" label="集群1" type="1" >
+			<node id="1_0_0" label="HPC1" type="2"  />
+			<node id="1_0_1" label="HPC2"  type="2"  />
+			<node id="1_0_2" label="HPC3"  type="2"  />
+		</node>
+		<node id="1_2" label="集群2" type="1" >
+			<node id="1_1_0" label="HPC1"  type="2"  />
+			<node id="1_1_1" label="HPC2" type="2"  />
+		</node>
+	</node>
+	<node id="2" label="遥感应用中心" type="0">		
+		<node id="2_0" label="集群1" type="1" >
+			<node id="2_0_0" label="HPC1" type="2"  />
+			<node id="2_0_1" label="HPC2"  type="2"  />
+			<node id="2_0_2" label="HPC3"  type="2"  />
+		</node>
+		<node id="2_1" label="集群2"  type="1">
+			<node id="2_1_0" label="HPC1" type="2"  />
+			<node id="2_1_1" label="HPC2"  type="2"  />
+		</node>
+	</node>
+</root>

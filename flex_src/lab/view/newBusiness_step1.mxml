@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow  xmlns:mx="http://www.adobe.com/2006/mxml" width="600" height="550"
+				 title="新建业务  第1步（共2步）" showCloseButton="true" fontSize="12"
+				 close="PopUpManager.removePopUp(this);"  creationComplete="init()" xmlns:s="library://ns.adobe.com/flex/spark">
+	<!--此控件用于读取业务申请页面一些下拉框的数据-->
+	<mx:HTTPService id="jobConfig" url="data/JobConfig/JobConfig.xml" result="jobConfigHandler(event)"/>
+	<mx:HTTPService id="zoneConfig" url="data/ZoneConfig/ZoneConfig.xml" result="zoneConfigHandler(event)"/>
+	
+	<mx:Script>
+		<![CDATA[
+			import lab.model.DCModelLocator;
+			import lab.valueObject.Job;
+			import lab.valueObject.VMNetStatus;
+			
+			import mx.collections.ArrayCollection;
+			import mx.containers.TitleWindow;
+			import mx.controls.Alert;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.validators.Validator;
+			
+			//新建业务第二步的视图。
+			private var step_two:newBusiness_step2;
+			
+			//用户配置的业务信息
+			[Bindable]
+			public var job:Job = new Job(); 
+			
+			[Bindable]
+			private var cpuNumList:ArrayCollection;
+			[Bindable]
+			private var memoryList:ArrayCollection;
+			[Bindable]
+			private var storageList:ArrayCollection;
+			[Bindable]
+			private var osList:ArrayCollection;
+			[Bindable]
+			private var hourList:ArrayCollection;
+			[Bindable]
+			private var zoneList:ArrayCollection;
+			
+			[Bindable]
+			private var dcModelLocator:DCModelLocator = DCModelLocator.getInstance();
+			
+			private var isJobNameExist:Boolean = false;
+			
+			private function init():void
+			{
+				jobConfig.send();
+				zoneConfig.send();
+			}
+			
+			//取消
+			private function cancel1():void{
+				PopUpManager.removePopUp(this);
+			}
+			
+			//下一步
+			private function step_2():void{
+				
+				var errors:Array = Validator.validateAll(validators);
+				
+				if(errors.length > 0 || isJobNameExist ||txtVmPass.text != txtVmPassConfirm.text)
+				{
+					labelErrorMsg.text = "输入不合法！";
+					return;
+				}
+				
+				
+				//初始化job的信息
+				if(!initJobInfo())
+				{
+					Alert.show("业务信息初始化失败！");
+					return;
+				}	
+				
+				//先移除第一步显示的弹出框
+				PopUpManager.removePopUp(this);
+				//				this.setVisible(false);
+				step_two = PopUpManager.createPopUp(this, newBusiness_step2, true) as newBusiness_step2;
+				step_two.job = job;
+				//使弹出框居中
+				PopUpManager.centerPopUp(step_two);
+			}
+			
+			
+			private function jobConfigHandler(evt:ResultEvent):void{
+				cpuNumList = evt.result.jobconfig.cpu;
+				memoryList = evt.result.jobconfig.memory;
+				storageList = evt.result.jobconfig.storage;
+				osList = evt.result.jobconfig.os;
+				hourList = evt.result.jobconfig.hour;
+			}
+			
+			private function zoneConfigHandler(evt:ResultEvent):void{
+				zoneList = evt.result.zoneconfig.zone;
+			}
+			
+			/**
+			 *确认密码输入框失去焦点后的响应函数。 
+			 */
+			private function vmConfitmFocusOut():void{
+				if(txtVmPass.text != txtVmPassConfirm.text)
+					labelPassConfirm.text = "两次输入的密码不一致！";
+				else if(null == txtVmPassConfirm.text)
+					labelPassConfirm.text = "密码不能为空！";
+				else if(txtVmPassConfirm.text.length < 6)
+					labelPassConfirm.text = "密码长度至少为6";
+				else
+					labelPassConfirm.text = "";
+			}
+			
+			private function initJobInfo():Boolean{
+				
+				//job.strJobName = strJobName.text;
+				//job.strJobDescription = strJobDescription.text;
+				//job.iJobId = 0;
+				//job.dateJobStartTime = date;
+				//job.iApplyHour = int(applyTime.value)*24+int(iHours.value);
+				//job.iJobStatus = 0;
+				
+				job.iCpuNum = int(iCpuNum.value);
+				job.iMemSize = int(iMemSize.value);
+//				job.iStorageSize = int(iStorageSize.value);
+				job.iStorageSize = 0; //这个选项暂时去掉，所以默认将其设为0.
+				job.iVmNum = int(ns_vmNum.value);
+				
+				job.iUserId = dcModelLocator.m_user.iUserId;
+				job.iOSType = int(iOSType.value);
+				job.iZoneId = int(comDataCenter.value);
+				
+				if(cheApplyPublicNet.selected)
+					job.iNetStatus = VMNetStatus.lOCAL2PUBLIC;
+				else
+					job.iNetStatus = VMNetStatus.LOCAL;
+				
+				return true;
+			}
+			
+			
+			
+			protected function strJobName_focusOutHandler(event:FocusEvent):void
+			{
+				if(null == job.strJobName)
+				{
+					checkJobNameMsg.text = "业务名不能为空！";
+					return;
+				}
+				checkJobNameMsg.text = "";
+				var iUserId:int = dcModelLocator.m_user.iUserId;
+				isJobNameExistRO.isJobExist(job.strJobName, iUserId);
+			}
+			
+			
+			protected function isJobNameExistRO_resultHandler(event:ResultEvent):void
+			{
+				isJobNameExist = event.result as Boolean;
+				if(isJobNameExist)
+				{
+					checkJobNameMsg.text = "该业务名称已经存在！";
+				}
+				else
+				{
+					checkJobNameMsg.text = "OK";
+				}
+			}
+			
+			
+			protected function isJobNameExistRO_faultHandler(event:FaultEvent):void
+			{
+				checkJobNameMsg.text = "出错啦！" + event.fault.toString();
+			}
+			
+
+			protected function txtVmPass_focusOutHandler(event:FocusEvent):void
+			{
+				if(null == job.strVmPass)
+				{
+					labelPass.text = "密码不能为空！";
+					return;
+				}
+				else if(job.strVmPass.length < 6)
+					labelPass.text = "密码长度至少为6";
+				else
+					labelPass.text = "";
+			}
+
+		]]>
+	</mx:Script>
+	
+	<!--RemoteObject -->
+	<mx:RemoteObject id="isJobNameExistRO" destination="JobServiceDest" 
+					 result="isJobNameExistRO_resultHandler(event)"
+					 fault="isJobNameExistRO_faultHandler(event)"/>
+	
+	<!--Validators 验证器 -->
+	<mx:Array id="validators">
+		<mx:StringValidator source="{strJobName}" property="text" required="true" minLength="1" />
+		<mx:StringValidator source="{txtVmPass}" property="text" required="true" minLength="6" />
+		<mx:StringValidator source="{txtVmPassConfirm}" property="text" required="true" minLength="6" />
+	</mx:Array>
+	
+	<!--界面 -->
+	<mx:Form id="firstStep" width="100%" paddingLeft="50" paddingTop="30">
+		<mx:FormHeading label="配置业务信息" />
+		
+		<mx:FormItem label="请选择数据中心："  height="30" >
+			<mx:ComboBox width="200" id="comDataCenter" dataProvider="{zoneList}"  labelField="label" ></mx:ComboBox>
+		</mx:FormItem>
+		
+		<mx:FormItem label="业务名称：" height="30" required="true" direction="horizontal" >
+			<mx:TextInput id="strJobName" text="@{job.strJobName}" width="200"
+						  focusOut="strJobName_focusOutHandler(event)" />
+			<mx:Label id="checkJobNameMsg" text="" color="red"/>
+		</mx:FormItem>
+		<mx:FormItem label="CPU：" height="30" >
+			<mx:ComboBox width="200" id="iCpuNum" dataProvider="{cpuNumList}" labelField="label" ></mx:ComboBox>
+		</mx:FormItem>
+		<mx:FormItem label="内存："  height="30" >
+			<mx:ComboBox width="200" id="iMemSize" dataProvider="{memoryList}"  labelField="label" ></mx:ComboBox>
+		</mx:FormItem>
+		<!--
+		<mx:FormItem label="存储：" height="30" >
+			<mx:ComboBox width="200" id="iStorageSize" dataProvider="{storageList}"  labelField="label"></mx:ComboBox>
+		</mx:FormItem>
+		-->
+		<mx:FormItem label="操作系统：" height="30" required="true">
+			<mx:ComboBox width="200" id="iOSType" dataProvider="{osList}"  labelField="label"></mx:ComboBox>
+		</mx:FormItem>
+		<mx:FormItem label="资源申请时间：" height="30" direction="horizontal">
+			<s:NumericStepper id="applyTime" minimum="1" maximum="100" verticalCenter="0" stepSize="10"/>
+			<mx:Label text="天" width="20"/>
+			<mx:ComboBox width="99" id="iHours"  dataProvider="{hourList}"  labelField="label"></mx:ComboBox>
+		</mx:FormItem>
+		<mx:FormItem label="虚拟机个数：" height="30" >
+			<s:NumericStepper id="ns_vmNum" minimum="1" maximum="10" verticalCenter="0" />
+		</mx:FormItem>
+		
+		<mx:FormItem label="请输入虚拟机初始密码：" height="30" required="true" direction="horizontal">
+			<mx:TextInput width="200" id="txtVmPass" text="@{job.strVmPass}" displayAsPassword="true"
+						  focusOut="txtVmPass_focusOutHandler(event)"/>
+			<mx:Label id="labelPass" text="密码长度至少为6" color="red"/>
+		</mx:FormItem>
+		<mx:FormItem label="请再次输入密码：" height="30" required="true" direction="horizontal">
+			<mx:TextInput width="200" id="txtVmPassConfirm" text="@{job.strVmPassConfirm}"  focusOut="vmConfitmFocusOut()" displayAsPassword="true"/>
+			<mx:Label id="labelPassConfirm" text="" color="red"/>
+		</mx:FormItem>
+		
+		<mx:FormItem height="60" direction="vertical">
+			<mx:CheckBox id="cheApplyPublicNet" label="虚拟机申请开通外网（需要管理审批）。 " />
+			<mx:Label text="注：默认情况下所申请的虚拟机不能上外网！" color="red"/>
+		</mx:FormItem>
+		
+		<mx:FormItem label="业务描述：" >
+			<mx:TextArea id="strJobDescription" width="300" height="80" text="@{job.strJobDescription}"/>
+		</mx:FormItem>
+		
+		<mx:FormItem label="提示：" >
+			<mx:Label id="labelErrorMsg" color="red"/>
+		</mx:FormItem>
+		
+		<mx:FormItem direction="horizontal" width="100%" paddingTop="20" paddingLeft="30">
+			<mx:Button id="cancel" label="取消" click="cancel1();"></mx:Button>
+			<mx:Button id="next" label="下一步" click="step_2();"></mx:Button>
+		</mx:FormItem>
+	</mx:Form>
+	
+	
+	
+	
+	
+</mx:TitleWindow>	

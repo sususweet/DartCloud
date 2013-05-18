@@ -1,0 +1,10 @@
+<chart lowerLimit='0' upperLimit='100' lowerLimitDisplay='' upperLimitDisplay='' palette='1' numberSuffix='%' chartRightMargin='20'>
+   <colorRange>
+      <color minValue='0' maxValue='75'  code='8BBA00' label='良好'/>
+      <color minValue='75' maxValue='90' code='F6BD0F' label=''/>
+      <color minValue='90' maxValue='100' code='FF654F'  label=''/>
+   </colorRange>
+   <pointers>
+      <pointer value='45' />
+   </pointers>
+</chart>

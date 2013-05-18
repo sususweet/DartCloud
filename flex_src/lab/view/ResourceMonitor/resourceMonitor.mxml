@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"  width="100%" height="100%" 
+		   creationComplete="resMonitoCanvas_creationCompleteHandler(event)" >
+	<mx:Script>
+		<![CDATA[
+			import mx.charts.CategoryAxis;
+			import mx.charts.Legend;
+			import mx.charts.LineChart;
+			import mx.charts.series.LineSeries;
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.controls.Label;
+			import mx.events.FlexEvent;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.http.HTTPService;
+			
+			import lab.model.DCModelLocator;
+			
+			//单例，全局变量；程序运行时可能用到的一些配置信息。
+			[Bindable]
+			private var dcModelLocator:DCModelLocator = DCModelLocator.getInstance();
+			
+			[Bindable]
+			public var g_arrVmIdAC:ArrayCollection;
+			
+			//host为待监控的IP 列表。
+			public var arrVmIp:ArrayCollection;
+			public var index:int = 0;
+			public var hasHttp1Flag:Boolean = false;
+			public var hasHttp2Flag:Boolean = false;
+			public var iHostNum:int;
+			public var node:ArrayCollection;
+			private const TIMER_INTERVAL:int = 3000; //每隔3s时间刷新数据
+			private var t:Timer;
+			
+			public function initData():void
+			{
+				g_arrVmIdAC = getArrVmId(dcModelLocator.selectedVmInfoAC);
+				resMonitorRO.vmIdList2IPList(g_arrVmIdAC);
+			}
+			
+			
+			//获取一组虚拟机信息中的Id列表。
+			protected function getArrVmId(arrVmInfo:ArrayCollection):ArrayCollection{
+				var retArrVmId:ArrayCollection = new ArrayCollection();
+				for(var i:int=0; i<arrVmInfo.length; i++){
+					retArrVmId.addItem(arrVmInfo[i].strVmId);
+				}
+				return retArrVmId;
+			}
+			
+			
+			private function resMonitorResult(event:ResultEvent):void{
+				arrVmIp = event.result as ArrayCollection;
+				iHostNum = arrVmIp.length;
+				//得到IP列表，使其能在前端显示出来。。。。
+				resMonitorDeamon();
+			}
+			
+			private function resMonitorDeamon():void{
+				if(index < iHostNum){
+					var lab:Label = new Label();
+					lab.width = 100;
+					lab.height = 50;
+					lab.left = 10;
+					lab.top = 10 + index * 370;
+					lab.text = "ONE-" + g_arrVmIdAC.getItemAt(index);
+					this.addElement(lab);
+					
+					var host:String = arrVmIp.getItemAt(index).toString();
+					http1.url = "data/" + host + "_cpu.xml";
+					
+//					Alert.show(http1.url);
+					http1.send();
+					
+					http2.url = "data/" + host + "_mem.xml";
+					http2.send();
+				}
+			}
+			
+			private function onHttp1Result(event:ResultEvent):void{
+				var lc:LineChart = new LineChart();
+				
+				lc.width = 500;
+				lc.height = 300;
+				lc.left = 10;
+				lc.top = 70 + index * 370;
+				
+				node = event.result.cpu_metric.cpu as ArrayCollection;
+				lc.dataProvider = node;
+				
+				
+				var axis:CategoryAxis = new CategoryAxis();
+				axis.categoryField = "time";
+				axis.dataProvider = node;
+				lc.horizontalAxis = axis;
+				
+				var myls:Array = new Array();
+				var ls1:LineSeries = new LineSeries();
+				ls1.xField = "time";
+				ls1.yField = "cpu_used";
+				ls1.displayName = "cpu_used";
+				myls.push(ls1);
+				
+				var ls2:LineSeries = new LineSeries();
+				ls2.xField = "time";
+				ls2.yField = "cpu_user";
+				ls2.displayName = "cpu_user";
+				myls.push(ls2);
+				
+				var ls3:LineSeries = new LineSeries();
+				ls3.xField = "time";
+				ls3.yField = "cpu_system";
+				ls3.displayName = "cpu_system";
+				myls.push(ls3);
+				
+				lc.series = myls;
+				var cl:Legend = new Legend();
+				cl.dataProvider = lc;
+				lc.showDataTips = true;
+				
+				this.addElement(lc);
+				indexIncrement(1);
+			}
+			
+			private function onHttp2Result(event:ResultEvent):void{
+				var lc:LineChart = new LineChart();
+				lc.width = 500;
+				lc.height = 300;
+				lc.left = 520;
+				lc.top = 70 + index * 370;
+				node = event.result.mem_metric.mem as ArrayCollection;
+				lc.dataProvider = node;
+				
+				var axis:CategoryAxis = new CategoryAxis();
+				axis.categoryField = "time";
+				axis.dataProvider = node;
+				lc.horizontalAxis = axis;
+				
+				var myls:Array = new Array();
+				var ls:LineSeries = new LineSeries();
+				ls.xField = "time";
+				ls.yField = "mem_used";
+				ls.displayName = "mem_used";
+				myls.push(ls);
+				
+				lc.series = myls;
+				var cl:Legend = new Legend();
+				cl.dataProvider = lc;
+				lc.showDataTips = true;
+				
+				this.addElement(lc);
+				indexIncrement(2);
+			}
+			
+			protected function indexIncrement(http:int):void{
+				if(http == 1)
+					hasHttp1Flag = true;
+				else if(http == 2)
+					hasHttp2Flag = true;
+				
+				if(hasHttp1Flag && hasHttp2Flag){
+					index ++;
+					hasHttp1Flag = false;
+					hasHttp2Flag = false;
+					resMonitorDeamon();
+				}
+			}
+
+			protected function resMonitoCanvas_creationCompleteHandler(event:FlexEvent):void
+			{
+				//设立一个timer，不断更新监控到的信息。
+//				t = new Timer(TIMER_INTERVAL);
+//				t.addEventListener(TimerEvent.TIMER,updateTimer);
+//				t.start();
+			}
+			
+			private function updateTimer(evt:TimerEvent):void{
+//				upDateMonitorDataRO.getVMInfoClass();
+			}
+			
+			private function upDateMonitorDataROResult(event:ResultEvent):void{
+				
+			}
+
+
+			protected function upDateMonitorDataRO_faultHandler(event:FaultEvent):void
+			{
+			}
+
+		]]>
+	</mx:Script>
+	
+	<mx:RemoteObject id="resMonitorRO" destination="JobOperationDest" result="resMonitorResult(event)" />
+	<mx:RemoteObject id="upDateMonitorDataRO" destination="resMonitorDest" result="upDateMonitorDataROResult(event)"
+					 fault="upDateMonitorDataRO_faultHandler(event)"/>
+	
+	<mx:HTTPService id="http1" result="onHttp1Result(event)" />
+	<mx:HTTPService id="http2" result="onHttp2Result(event)" />
+	
+</mx:Canvas>

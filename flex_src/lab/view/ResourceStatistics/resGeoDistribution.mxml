@@ -1,0 +1,121 @@
+<?xml version = "1.0" encoding = "utf-8"?>
+<mx:Canvas xmlns:mx = "http://www.adobe.com/2006/mxml" width = "100%" height = "100%">
+	<mx:Script>
+		<![CDATA[
+			import mx.charts.chartClasses.Series;
+			import mx.collections.ArrayCollection;
+			import mx.collections.ArrayList;
+			import mx.events.FlexEvent;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			
+			//******************CPU*********************************************		
+			[Bindable]
+			public var cpuData: ArrayCollection;
+			private function chartLabel(dataItem:Object, field:String, index:int, dataPercent:Number):String
+			{
+				var tip:String = "所属服务器名称: " + dataItem.cpuSeverName + "\n" + "所属服务器地址: " + dataItem.cpuSeverLocation + "\n"
+					+ "CPU数量: " + dataItem.cpuNumber + "\n" + "所占总CPU数量百分比: " + dataItem.cpuPercentage;
+				return tip;
+			}
+			protected function cpu_EnterStateHandler(event:Event):void
+			{
+				// TODO Auto-generated method stub
+				testRO.getAllInformation();
+			}
+			protected function testRO_resultHandler(result:Object):void
+			{
+				// TODO Auto-generated method stub
+				cpuData = result as ArrayCollection;
+				
+				//trace(cpuData[0]);
+				//cpuPie.dataProvider = result;
+				
+			}
+			
+			//********************************MEMORY******************************
+			[Bindable]
+			public var memoryData: ArrayCollection;
+			private function chartLabel_Memory(dataItem:Object, field:String, index:int, dataPercent:Number):String
+			{
+				var tip:String = "所属服务器名称: " + dataItem.memorySeverName + "\n" + "所属服务器地址: " + dataItem.memorySeverLocation + "\n"
+					+ "内存大小: " + dataItem.memoryNumber + "\n" + "所占总内存大小百分比: " + dataItem.memoryPercentage;
+				return tip;
+			}
+			protected function memory_EnterStateHandler(event:Event):void
+			{
+				// TODO Auto-generated method stub
+				memoryRO.getAllInformation();
+			}
+			protected function memoryRO_resultHandler(result:Object):void
+			{
+				// TODO Auto-generated method stub
+				memoryData = result as ArrayCollection;
+			}
+			
+			//********************************STORAGE******************************
+			[Bindable]
+			public var storageData: ArrayCollection;
+			private function chartLabel_Storage(dataItem:Object, field:String, index:int, dataPercent:Number):String
+			{
+				var tip:String = "所属服务器名称: " + dataItem.storageSeverName + "\n" + "所属服务器地址: " + dataItem.storageSeverLocation + "\n"
+					+ "存储大小: " + dataItem.storageNumber + "\n" + "所占总存储大小百分比: " + dataItem.storagePercentage;
+				return tip;
+			}
+			protected function storage_EnterStateHandler(event:Event):void
+			{
+				// TODO Auto-generated method stub
+				storageRO.getAllInformation();
+			}
+			protected function storageRO_resultHandler(result:Object):void
+			{
+				// TODO Auto-generated method stub
+				storageData = result as ArrayCollection;
+			}
+			
+		]]>
+	</mx:Script>
+	
+	<mx:RemoteObject id = "testRO" destination = "HX_resGeoDistribution_CPUDest" result = "testRO_resultHandler(event.result)" />
+	<mx:RemoteObject id = "memoryRO" destination = "ResGeoDistribution_MemoryDest" result = "memoryRO_resultHandler(event.result)"/>
+	<mx:RemoteObject id = "storageRO" destination = "ResGeoDistribution_StorageDest" result = "storageRO_resultHandler(event.result)"/>
+	
+	<mx:states>
+		<mx:State name = "CPU" enterState="cpu_EnterStateHandler(event)">
+			<mx:AddChild position="lastChild">
+				
+				<mx:PieChart id = "cpuPie" width = "100%" height = "100%" dataProvider="{cpuData}">
+					<mx:series>	
+						<mx:PieSeries field = "cpuNumber" labelPosition="callout" fontSize="15" labelFunction = "chartLabel"/>
+					</mx:series>
+				</mx:PieChart>
+				
+			</mx:AddChild>
+		</mx:State>
+		
+		<mx:State name = "MEMORY" enterState="memory_EnterStateHandler(event)">
+			<mx:AddChild position="lastChild">
+				
+				<mx:PieChart id = "memoryPie" width = "100%" height = "100%" dataProvider="{memoryData}">
+					<mx:series>	
+						<mx:PieSeries field = "memoryNumber" labelPosition="callout" fontSize="15" labelFunction = "chartLabel_Memory"/>
+					</mx:series>
+				</mx:PieChart>
+				
+			</mx:AddChild>
+		</mx:State>
+		
+		<mx:State name = "STORAGE" enterState="storage_EnterStateHandler(event)">
+			<mx:AddChild position="lastChild">
+				
+				<mx:PieChart id = "storagePie" width = "100%" height = "100%" dataProvider="{storageData}">
+					<mx:series>	
+						<mx:PieSeries field = "storageNumber" labelPosition="callout" fontSize="15" labelFunction = "chartLabel_Storage"/>
+					</mx:series>
+				</mx:PieChart>
+				
+			</mx:AddChild>
+		</mx:State>
+	</mx:states>
+	
+</mx:Canvas>

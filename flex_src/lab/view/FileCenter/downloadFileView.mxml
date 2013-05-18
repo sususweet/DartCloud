@@ -1,0 +1,427 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:HBox  xmlns:mx="http://www.adobe.com/2006/mxml" width="800" height="600" paddingTop="20" paddingBottom="20" paddingRight="20" paddingLeft="20" 
+				  xmlns:dg="dg.*" xmlns:FileCenter="lab.view.FileCenter.*">
+	<mx:Metadata>
+		//[Event(name="DelPrivateEvent",type="view.FileCenter.DeleteFileEvent")]
+		//[Event(name="ShaPrivateEvent",type="view.FileCenter.DeleteFileEvent")]
+	</mx:Metadata>
+	<mx:Script>
+		<![CDATA[
+			//creationComplete="downloadView_creationCompleteHandler(event)"
+			import dg.myadg.CheckBoxHeaderRenderer;
+			import dg.myadg.CheckBoxItemRenderer;
+			import dg.myadg.CheckboxColumn;
+			
+			import lab.model.DCModelLocator;
+			import lab.valueObject.Job;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.events.ListEvent;
+			import mx.managers.PopUpManager;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			
+			[Bindable]
+			private var dcModelLocator:DCModelLocator = DCModelLocator.getInstance();
+			
+			[Bindable]
+			private var str:String = null;//获取用户当前选择的业务的jobid
+			
+			//下载文件时的URLRequest
+//			private var strDownloadBaseUrl:String = "http://" + dcModelLocator.webServerIp + ":8080/mupload/upload/";
+			
+			/* protected function downloadView_creationCompleteHandler(event:FlexEvent):void
+			{
+				//var str:String = dcModelLocator.curSelectedJobId as String;
+				
+				//trace("file upload webIp:" + DCModelLocator.webIp);
+				
+				privateDataGrid.addEventListener("DelPrivateEvent", deletePrivateFileHandler);
+				privateDataGrid.addEventListener("ShaPrivateEvent", sharePrivateFileHandler);
+				
+				//privateFileInfoRO.getPrivateFileList(str); //私有
+				//publicFileInfoRO.getPublicFileList(); //公有
+			}
+			
+			protected function sharePrivateFileHandler(evt:DeleteFileEvent):void//将私有云盘的文件共享至公有云盘
+			{
+				
+			} */
+			/* protected function deletePrivateFileHandler(evt:DeleteFileEvent):void//删除文件操作,要删除列表，要删除复选框的复选结果，要删除本地文件
+			{
+				var index:int = privateFileInfo.getItemIndex(evt._deleteFile);
+				var name:String = privateFileInfo.getItemAt(index).fileName;
+				privateFileInfo.removeItemAt(index);
+				var temp:Array = privateDataGrid.columns[0].selectItems;
+				for(var i:int = 0; i < temp.length; i ++)
+				{
+					if(name == temp[i].fileName)
+					{
+						break;
+					}
+				}
+				if(i < temp.length)//这个将要删除的文件恰好选中过
+				{
+					privateDataGrid.columns[0].selectItems.splice(i,1);
+				}
+				//privateDataGrid.getSelectedItem()
+				deletePrivateFileRO.deletePrivateFile(name, str);
+			} */
+			
+			//[Bindable]
+			//public var privateFileInfo:ArrayCollection;//私有盘
+			
+			
+			/* protected function privateFileInfoRO_resultHandler(result:Object):void
+			{
+				privateFileInfo = result as ArrayCollection;
+				
+			} */
+			
+			/* [Bindable]
+			public var publicFileInfo:ArrayCollection;//公有盘
+			protected function publicFileInfoRO_resultHandler(result:Object):void
+			{
+				publicFileInfo = result as ArrayCollection;
+			} */
+			
+			
+			
+			
+			
+			/* protected function downloadButton_clickHandler(event:MouseEvent):void//私有 盘下载
+			{
+				var privateFiles:ArrayCollection = new ArrayCollection();//将文件打包
+				var strDownloadBaseUrl:String = "http://" + dcModelLocator.webServerIp + "/mupload/upload/";
+				//Alert.show(privateDataGrid.columns[0].selectItems[0].fileName);
+				//Alert.show("开启地址:" + DCModelLocator.webIp + "**** 但实际地址为:" + strDownloadBaseUrl);
+				var selectedArray:Array = privateDataGrid.columns[0].selectItems;
+				for(var i:int = 0; i < selectedArray.length; i ++)
+				{
+					privateFiles.addItem(selectedArray[i].fileName);
+				}
+				if(privateFiles.length >= 1)
+				{
+					DownloadZipFileRO.packageFiles(privateFiles, "Private", str);//私有盘打包
+				}
+			} */
+			
+			/* protected function button1_clickHandler(event:MouseEvent):void//公有盘下载
+			{
+				var publicFiles:ArrayCollection = new ArrayCollection();//将文件打包
+				var strDownloadBaseUrl:String = "http://" + dcModelLocator.webServerIp + "/mupload/upload/";
+				//Alert.show("开启地址:" + DCModelLocator.webIp + "**** 但实际地址为:" + strDownloadBaseUrl);
+				
+				var selectedArray:Array = publicDataGrid.columns[0].selectItems;
+				for(var i:int = 0; i < selectedArray.length; i ++)
+				{
+					publicFiles.addItem(selectedArray[i].fileName);
+				}
+				if(publicFiles.length >= 1)
+				{
+					DownloadZipFileRO.packageFiles(publicFiles, "Public", str);//公有盘打包
+				}
+			} */
+
+
+			/* protected function privateFileInfoRO_faultHandler(event:FaultEvent):void
+			{
+				Alert.show("Flex获取私有文件失败: " + event.fault.toString());
+			} */
+
+
+			/* protected function publicFileInfoRO_faultHandler(event:FaultEvent):void
+			{
+				Alert.show("Flex获取公有文件失败: " + event.fault.toString());
+			} */
+		
+			//当点击不同的业务名称时，主列表上应该显示该业务下相应的虚拟机信息。
+			protected function computingResTree_changeHandler(event:ListEvent):void
+			{
+				
+				if( dcModelLocator.userJobInfoAC.length == 0 )
+				{
+					Alert.show("无业务信息！", '提示');
+					return;
+				}	
+				var selectedNode:XML = Tree(event.target).selectedItem as XML;
+				
+				var strSelectedLabel:String = selectedNode.@label;
+				var selType:int = selectedNode.@type;
+				var selectedIndex:int = selectedNode.@id;
+				
+				var tmpJob:Job = new Job();//注意，若不新建一个新的对象，则会发生浅拷贝的问题，容易修改其他的数据，导致bug。
+				
+				if(selType == 0)//选择根节点
+				{
+					dcModelLocator.curSelectedJob = null; //0表示没有选择业务
+				}
+				else if(selType == 1 || selType ==2)//选择业务或者虚拟机
+				{
+					tmpJob = dcModelLocator.userJobInfoAC[selectedIndex] as Job;
+					//dcModelLocator.selectedVmInfoAC = UtilFunc.getOnJobVmInfo(tmpJob);
+					dcModelLocator.curSelectedJob = tmpJob;
+					str = dcModelLocator.curSelectedJob.iJobId.toString();//获取当前选择的业务ID。
+					privateDisk.str = str;
+					publicDisk.str = str;
+					publicNotToAllDisk.str = str;
+					privateDisk.privateFileInfoRO.getPrivateFileList(privateDisk.str);//私有
+					publicDisk.publicFileInfoRO.getPublicFileList("public_to_all");
+					publicNotToAllDisk.publicNotToAllFileInfoRO.getPublicFileList("public_not_to_all");
+					//privateFileInfoRO.getPrivateFileList(str); //私有
+					//publicFileInfoRO.getPublicFileList(); //公有
+					
+					//publicDataGrid.columns[0].selectItems;
+					//var length:int = privateDataGrid.columns[0].selectItems.length;
+					//privateDataGrid.columns[0].selectItems.splice(0);
+					//publicDataGrid.columns[0].selectItems.splice(0);
+					//Alert.show("" + dcModelLocator.curSelectedJobId);
+				}
+//				else if(selType ==2)//选择虚拟机
+//				{
+//					var vmIndex:int = selectedIndex % 1000;
+//					var jobIndex:int = selectedIndex / 1000;
+//					var job:Job = dcModelLocator.userJobInfoAC[jobIndex] as Job;
+//					
+//					var oneVmInfo:VM = new VM();
+//					oneVmInfo = job.vmArrayInfo[vmIndex] as VM;
+//					var retArr:ArrayCollection = new ArrayCollection();
+//					retArr.addItem({strVmName:oneVmInfo.strVmName, vm_status:"正在运行", cpu_status:5, strJobName:job.strJobName,
+//						iVmId:oneVmInfo.iVmId})
+//					
+//					dcModelLocator.selectedVmInfoAC  = retArr;
+//				}
+				
+			}
+
+			private var fileUploadView:uploadFileView = new uploadFileView();
+			protected function btnUploadFile_clickHandler(event:MouseEvent):void
+			{
+				if(null == dcModelLocator.curSelectedJob || dcModelLocator.curSelectedJob.iJobId == 0)
+				{
+					Alert.show("请选择上传业务！");
+					return;
+				}
+				fileUploadView = PopUpManager.createPopUp(this, uploadFileView, false) as uploadFileView;
+//				vncConnect.strIp = strIp;
+//				vncConnect.strVmName = "one-" + iVmId;
+				//使弹出框居中
+				PopUpManager.centerPopUp(fileUploadView);
+			}
+
+			/* protected function DownloadZipFileRO_resultHandler(result:Object):void//打包完成后，返回下载链接，浏览器打开下载对话框
+			{
+				// TODO Auto-generated method stub
+				var strDownloadBaseUrl:String = "http://" + dcModelLocator.webServerIp + "/mupload/upload/";
+				//navigateToURL(new URLRequest(strDownloadBaseUrl + "publicspace/" + publicFileInfo[i].fileName), "下载窗口" + i);
+				var downloadZipName:String = result as String;
+				var finalDownloadLink:String = strDownloadBaseUrl + "zipStore/" + downloadZipName;
+				navigateToURL(new URLRequest(finalDownloadLink), "_blank");
+				
+			} */
+			
+			/* protected function deletePrivateFileRO_resultHandler(event:ResultEvent):void
+			{
+				// TODO Auto-generated method stub
+				//do nothing!
+			} */
+			
+			/* private var publicColumns:Array=new Array();
+			protected function publicDataGrid_initializeHandler(event:FlexEvent):void
+			{
+				// TODO Auto-generated method stub
+				if (publicDataGrid.hasCheck)
+				{
+					var checkColumn:CheckboxColumn=new CheckboxColumn();
+					checkColumn.itemRenderer=new ClassFactory(CheckBoxItemRenderer);
+					checkColumn.headerRenderer=new ClassFactory(CheckBoxHeaderRenderer);
+					checkColumn.dataField="dgSelected";
+					checkColumn.width=25;
+					publicColumns.push(checkColumn);
+				}
+			}
+			
+			protected function publicDataGrid_creationCompleteHandler(event:FlexEvent):void
+			{
+				// TODO Auto-generated method stub
+				if (publicDataGrid.columns.length > 0)
+				{
+					for (var j:int=0; j < publicDataGrid.columns.length; j++)
+					{
+						if (publicDataGrid.columns[j].dataField != null)
+						{
+							publicColumns.push(publicDataGrid.columns[j]);
+						}
+					}
+				}
+				publicDataGrid.columns=publicColumns;
+			} */
+			
+			
+			/* private var privateColumns:Array=new Array();
+			protected function privateDataGrid_initializeHandler(event:FlexEvent):void
+			{
+				// TODO Auto-generated method stub
+				if (privateDataGrid.hasCheck)
+				{
+					var checkColumn:CheckboxColumn=new CheckboxColumn();
+					checkColumn.itemRenderer=new ClassFactory(CheckBoxItemRenderer);
+					checkColumn.headerRenderer=new ClassFactory(CheckBoxHeaderRenderer);
+					checkColumn.dataField="dgSelected";
+					checkColumn.width=25;
+					privateColumns.push(checkColumn);
+				}
+			} */
+			
+			/* protected function privateDataGrid_creationCompleteHandler(event:FlexEvent):void
+			{
+				// TODO Auto-generated method stub
+				if (privateDataGrid.columns.length > 0)
+				{
+					for (var j:int=0; j < privateDataGrid.columns.length; j++)
+					{
+						if (privateDataGrid.columns[j].dataField != null)
+						{
+							privateColumns.push(privateDataGrid.columns[j]);
+						}
+					}
+				}
+				privateDataGrid.columns=privateColumns;
+			} */
+		]]>
+	</mx:Script>
+	
+	<!--<mx:RemoteObject id="privateFileInfoRO" destination="DownlodDest" result="privateFileInfoRO_resultHandler(event.result)" fault="privateFileInfoRO_faultHandler(event)"/>-->
+	<!--<mx:RemoteObject id="publicFileInfoRO" destination="DownlodDest" result="publicFileInfoRO_resultHandler(event.result)" fault="publicFileInfoRO_faultHandler(event)"/>-->
+	<!--<mx:RemoteObject id="DownloadZipFileRO" destination="DownlodDest" result="DownloadZipFileRO_resultHandler(event.result)" />
+	<mx:RemoteObject id="deletePrivateFileRO" destination="DownlodDest" result="deletePrivateFileRO_resultHandler(event)"/>-->
+	
+	<mx:VBox width="150" height="100%">
+		<mx:VBox width="100%" height="35" borderStyle="solid" paddingLeft="10" paddingTop="5">
+			<mx:Button id="btnUploadFile" label="上传文件" click="btnUploadFile_clickHandler(event)"/>
+		</mx:VBox>
+		<mx:Tree id="computingResTree" width="100%" height="100%" 
+				 labelField="@label"  showRoot="true" dataProvider="{dcModelLocator.JobInfoXMLList}"
+				 change="computingResTree_changeHandler(event)" />
+	</mx:VBox>
+	
+	<mx:Style>
+		
+		/* .publicDisk
+		{
+			left:50px;
+			top:50px;
+			
+		} */
+		
+		/* .privateDisk
+		{
+			right:50px;
+			top:50px;
+		} */
+		
+	</mx:Style>
+	
+	<!--<mx:Canvas width="100%" height="100%" borderStyle="solid" minWidth="1200">-->
+		
+		<mx:TabNavigator width="100%" height="100%" styleName="fileTabNavigator" horizontalAlign="left" horizontalGap="2"
+						 fontSize="12" selectedIndex="0" minWidth="1200">
+			<FileCenter:PublcDisk id="publicDisk" label="公共盘" width="100%" height="100%" />
+			<FileCenter:PublicNotToAllDisk id="publicNotToAllDisk" label="协同共享盘" width="100%" height="100%" />
+			<FileCenter:PrivateDisk id="privateDisk" label="业务盘" width="100%" height="100%" />
+			
+		<!--<mx:Canvas styleName="publicDisk" label="公共盘">
+		<mx:Label text="公有云盘内容：" x="36" y="0" fontWeight="bold"/>
+		<mx:Button x="360" y="0" label="下载" click="button1_clickHandler(event)" />
+		
+		<dg:AdvancedDataGrid x="0" y="60" id="publicDataGrid" width="450" height="410" variableRowHeight="true" rowHeight="25" sortExpertMode="true"
+							 hasCheck="true" dataProvider="{publicFileInfo}" sortableColumns="false"
+							 initialize="publicDataGrid_initializeHandler(event)" creationComplete="publicDataGrid_creationCompleteHandler(event)">
+			<dg:columns>
+				<mx:AdvancedDataGridColumn dataField="fileName" headerText="文件名称" fontWeight="bold" textAlign="center" width="360"/>
+				<mx:AdvancedDataGridColumn dataField="fileSize" headerText="文件大小" textAlign="center" width="100"/>
+			</dg:columns>
+		</dg:AdvancedDataGrid>
+		</mx:Canvas>-->
+		
+		<!--<mx:Canvas styleName="privateDisk" label="业务盘">
+		<mx:Label text="私有云盘内容：" left="36" fontWeight="bold"/>
+		<mx:Button right="40" id="downloadButton" label="下载" click="downloadButton_clickHandler(event)" />
+		
+		<dg:AdvancedDataGrid top="60" id="privateDataGrid" width="570" height="410" rowHeight="25" sortExpertMode="true"
+							 hasCheck="true" dataProvider="{privateFileInfo}" sortableColumns="false"
+							 initialize="privateDataGrid_initializeHandler(event)" creationComplete="privateDataGrid_creationCompleteHandler(event)">
+			<dg:columns>
+				<mx:AdvancedDataGridColumn dataField="fileName" headerText="文件名称" fontWeight="bold" textAlign="center" width="350"/>
+				<mx:AdvancedDataGridColumn dataField="fileSize" headerText="文件大小" textAlign="center" width="100"/>
+				<mx:AdvancedDataGridColumn dataField="operation" headerText="操作栏" textAlign="center" width="120">
+					<mx:itemRenderer>
+						<mx:Component>
+							<mx:HBox horizontalAlign="center">
+								
+								<mx:Script>
+									<![CDATA[
+										import mx.rpc.events.ResultEvent;
+										import mx.controls.Alert;
+										import mx.events.CloseEvent;
+										
+										protected function deletePrivateFile_clickHandler(event:MouseEvent):void
+										{
+											// TODO Auto-generated method stub
+											Alert.yesLabel = "确定";
+											Alert.noLabel = "取消";
+											Alert.show('确定要删除吗?', '提示', 1 | 2, this, deleteHandler);
+											
+											
+										}
+										
+										public function deleteHandler(event:CloseEvent):void
+										{
+											if (event.detail == Alert.YES)
+											{
+												var evt:DeleteFileEvent=new DeleteFileEvent("DelPrivateEvent", data);
+												dispatchEvent(evt);
+											}
+										}
+										
+										protected function sharePrivateFile_clickHandler(event:MouseEvent):void
+										{
+											// TODO Auto-generated method stub
+											Alert.yesLabel = "确定";
+											Alert.noLabel = "取消";
+											Alert.show('确定要将该文件共享至公有云盘?', '提示', 1 | 2, this, shareHandler);
+										}
+										
+										public function shareHandler(event:CloseEvent):void
+										{
+											if(event.detail == Alert.YES)
+											{
+												var evt:DeleteFileEvent = new DeleteFileEvent("ShaPrivateEvent", data);
+												dispatchEvent(evt);
+											}
+										}
+										
+									]]>
+								</mx:Script>
+								
+								
+								
+								<mx:LinkButton id="deletePrivateFile" label="删除" click="deletePrivateFile_clickHandler(event)"/>
+								<mx:LinkButton id="sharePrivateFile" label="共享" click="sharePrivateFile_clickHandler(event)" />
+								
+							</mx:HBox>
+							
+						</mx:Component>
+					</mx:itemRenderer>
+				</mx:AdvancedDataGridColumn>
+			</dg:columns>
+		</dg:AdvancedDataGrid>
+		</mx:Canvas>-->
+		</mx:TabNavigator>
+	<!--</mx:Canvas>-->
+	
+	
+</mx:HBox>

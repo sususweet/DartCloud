@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!--
+*	1级item
+*		id: 流程模板id, templatename: 模板名称
+*	内层item
+*		id: 流程步骤id, stepname: 步骤名称, type: 步骤类型(0-处理, 1-网传, 2-终点), datatag: 是否为数据流步骤(0-否, 1-是)
+-->
+<res>
+	<item id='1' templatename='流程模板1'>
+		<item id='1' stepname='接收' type='0' datatag='1'>
+			<item id='2' stepname='审批' datatag='0'/>
+			<item id='3' stepname='数据接收' datatag='1'/>
+		</item>
+		<item id='4' stepname='网络传输1' type='1' datatag='1'/>
+		<item id='5' stepname='处理' type='0' datatag='1'>
+			<item id='6' stepname='审批' datatag='0'/>
+			<item id='7' stepname='数据处理' datatag='1'/>
+		</item>
+		<item id='8' stepname='网络传输2' type='1' datatag='1'/>
+		<item id='9' stepname='加工' type='0' datatag='1'>
+			<item id='10' stepname='审批' datatag='0'/>
+			<item id='11' stepname='数据加工' datatag='1'/>
+		</item>
+		<item id='12' stepname='网络传输3' type='1' datatag='1'/>
+		<item id='13' stepname='存储' type='2' datatag='1'/>
+	</item>
+	<item id='2' templatename='流程模板2'>
+		<item id='1' stepname='接收' type='0' datatag='1'>
+			<item id='2' stepname='审批' datatag='0'/>
+			<item id='3' stepname='数据接收' datatag='1'/>
+		</item>
+		<item id='4' stepname='网络传输1' type='1' datatag='1'/>
+		<item id='5' stepname='处理' type='0' datatag='1'>
+			<item id='6' stepname='审批' datatag='0'/>
+			<item id='7' stepname='数据处理' datatag='1'/>
+		</item>
+		<item id='8' stepname='网络传输2' type='1' datatag='1'/>
+		<item id='9' stepname='加工' type='0' datatag='1'>
+			<item id='10' stepname='审批' datatag='0'/>
+			<item id='11' stepname='数据加工' datatag='1'/>
+		</item>
+		<item id='12' stepname='网络传输3' type='1' datatag='1'/>
+		<item id='13' stepname='存储' type='2' datatag='1'/>
+	</item>
+	<errormessage></errormessage>
+</res>

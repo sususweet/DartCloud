@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!--
+*	stepid: 大流程步骤id, nodeid: 节点id, resourceid: 资源id, fromnodeid: 起始节点id, tonodeid: 目的节点id
+*	处理步骤有节点id但是没有起始节点id和目的节点id,网络传输步骤则相反
+*	终止步骤只有节点id
+-->
+<res>
+	<item stepid='1' nodeid='2' resourceid='2'/>
+	<item stepid='4' resourceid='5' fromnodeid='2' tonodeid='3'/>
+	<item stepid='5' nodeid='3' resourceid='3'/>
+	<item stepid='8' resourceid='6' fromnodeid='3' tonodeid='4'/>
+	<item stepid='9' nodeid='4' resourceid='4'/>
+	<item stepid='12' resourceid='7' fromnodeid='4' tonodeid='1'/>
+	<item stepid='13' nodeid='1'/>
+	<errormessage></errormessage>
+</res>
