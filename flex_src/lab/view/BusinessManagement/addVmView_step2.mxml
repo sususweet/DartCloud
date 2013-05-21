@@ -57,9 +57,11 @@
 			//确认
 			public function addVmsToJob():void{
 //				CheckImageEnoughRO.checkImage(job.iVmNum, job.iOSType);
-				sure.enabled = false;
-				sure.label = "请稍等";
-				JobOperationRO.addVms2Job(job);
+				
+				isAllowUserAppayMoreVmsRO.isAllowUserApplyMoreVMs(job.iUserId, job.iVmNum);
+//				sure.enabled = false;
+//				sure.label = "请稍等";
+//				JobOperationRO.addVms2Job(job);
 			}
 			
 			
@@ -117,6 +119,30 @@
 			{
 				trace("fault in DelteOneJobCommand!");
 				Alert.show("添加虚拟机失败！" + event.fault,'提示');
+				//去掉当前窗口
+				PopUpManager.removePopUp(this);
+			}
+
+
+			protected function isAllowUserAppayMoreVmsRO_resultHandler(event:ResultEvent):void
+			{
+				var bRes:Boolean = event.result as Boolean;
+				if(true == bRes)
+				{
+					sure.enabled = false;
+					sure.label = "请稍等";
+					JobOperationRO.addVms2Job(job);
+				}
+				else
+				{
+					Alert.show("当前您最多只能申请10台虚拟机，如果需要更多的虚拟机，请联系管理员！", "错误");
+				}
+				
+			}
+
+			protected function isAllowUserAppayMoreVmsRO_faultHandler(event:FaultEvent):void
+			{
+				Alert.show("申请虚拟机出现异常，请重试！");
 			}
 
 		]]>
@@ -129,7 +155,8 @@
 	
 	<mx:RemoteObject id="JobOperationRO" destination="JobOperationDest" result="JobOperationRO_resultHandler(event)"
 					 fault="JobOperationRO_faultHandler(event)"/>
-	
+	<mx:RemoteObject id="isAllowUserAppayMoreVmsRO" destination="UserServiceDest"
+					 result="isAllowUserAppayMoreVmsRO_resultHandler(event)" fault="isAllowUserAppayMoreVmsRO_faultHandler(event)" />
 	
 	<mx:Form id="secondStep" width="100%" paddingLeft="50" paddingTop="30">
 		<mx:FormItem label="业务名称：" height="30">

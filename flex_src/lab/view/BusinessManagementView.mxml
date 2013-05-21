@@ -170,14 +170,24 @@
 		]]>
 	</mx:Script>
 	
-	
-	
 	<mx:VBox width="15%" height="100%">
 		<mx:Button width="100%" label="新建业务" click="showTitleWindow()"></mx:Button>
 		<mx:Button id="btnDeleteJob" width="100%" label="删除业务" click="btnDeleteJob_deleteHandle(event)"></mx:Button>
-		<mx:Tree id="jobInfoTree" width="100%" height="100%" 
+		<mx:Tree id="jobInfoTree" width="100%" height="60%" 
 				 labelField="@label"  showRoot="true" dataProvider="{dcModelLocator.JobInfoXMLList}"
 				 change="jobInfoTree_changeHandler(event)" />
+		<!--&#13表示换行符 -->
+		<mx:TextArea text="如何使用putty访问虚拟机？
+					 第一步：连接对应数据中心的主服务器：
+					 西溪：dartcloud.zju.edu.cn 
+					 玉泉: 210.32.157.89(校外用户), 10.214.0.170(校内用户);
+					 计算所：159.226.40.156
+					 清华： 166.111.5.238 &#13; 
+					 自动化所： 159.226.19.5; &#13;
+					 第二步：输入用户名：863_guest 密码：chinacloud; 
+					 第三步：按照提示输入VM的IP，用户名root，密码：(新建业务时所设置的密码);&#13;
+					 这样就可以访问到你所申请的虚拟机了！
+					 " height="40%" width="100%"/>
 	</mx:VBox>
 	
 	<mx:ViewStack id="viewStack" width="85%" height="100%" selectedIndex="0" borderStyle="solid">

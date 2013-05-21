@@ -70,7 +70,7 @@
 				{
 					var sf:SingleFile = new SingleFile();
 					sf.file = file;
-					sf.progress = 0;
+					//sf.progress = 0;
 					sf.getFileName();
 					sf.getFileSize();
 					//sf.file.addEventListener(ProgressEvent.PROGRESS, uploadProgressHandler(event));
@@ -246,37 +246,60 @@
 							<mx:Script>
 								<![CDATA[
 									
-								protected var uploadProgress:int = 0;
+									import mx.controls.Alert;
 									
-								override public function set data(value:Object):void
-								{
-									super.data = value;
-									if(data == null)
+									override public function set data(value:Object):void
 									{
-										return;
+										super.data = value;
+										if(data == null)
+										{
+											return;
+										}
+										else
+										{
+											var sf:SingleFile=(SingleFile)(data);
+											//文件句柄
+											var file:FileReference=sf.file;
+											
+											//sf.progress = prg.percentComplete;
+											prg.setProgress(sf.progress, 100);
+											
+											//prg.source = ProgressEvent;
+											file.addEventListener(ProgressEvent.PROGRESS, progress);
+										}
 									}
-									else
-									{
-										var sf:SingleFile=(SingleFile)(data);
-										//文件句柄
-										var file:FileReference=sf.file;
 										
-										prg.setProgress(data.progress , 100);
-										file.addEventListener(ProgressEvent.PROGRESS, progress);
+									private function progress(event:ProgressEvent):void
+									{
+										prg.setProgress(event.bytesLoaded, event.bytesTotal);
+										data.progress = prg.percentComplete;
+										//data.progress = prg.percentComplete;
+										//data.progress = (event.bytesLoaded / event.bytesTotal) * 100;
+										//Alert.show(prg.percentComplete.toString());
 									}
-								}
 									
-								private function progress(event:ProgressEvent):void
-								{
-									prg.setProgress(event.bytesLoaded, event.bytesTotal);
-									uploadProgress = prg.percentComplete;
-								}
-								
+									protected function prg_completeHandler(event:Event):void
+									{
+										// TODO Auto-generated method stub
+										//prg.label = "上传完成";
+										data.progress = prg.percentComplete;
+									}
+										
+									protected function prg_progressHandler(event:ProgressEvent):void
+									{
+										// TODO Auto-generated method stub
+										//prg.label = "{eve.bytesLoaded / eve.bytesTotal * 100}%";
+										//data.progress = prg.percentComplete;
+									}
+									
 								]]>
 							</mx:Script>
 							
 							<mx:ProgressBar id="prg" barColor="#87e25f" trackColors="[white, haloSilver]"
-											width="145" height="16" labelPlacement="center" mode="manual" label="%3%%"/>
+											mode="manual"
+											width="145" height="16" labelPlacement="center" label="%3%%"
+											complete="prg_completeHandler(event)"
+											progress="prg_progressHandler(event)"/>
 							
 						</mx:HBox>
 					</mx:Component>

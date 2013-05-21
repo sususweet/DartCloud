@@ -314,7 +314,7 @@ public class VmOperation {
 			logWriter.log("//***************调试-删除镜像************************//");
 			logWriter.log("imgOperation.deleteImage("+imageId+");");
 			imgOperation.deleteImage(imageId);
-			logWriter.log("对虚拟机" + strVmId + "的删除操作成功。");
+			logWriter.log("在openNebula中对虚拟机" + strVmId + "的删除操作成功。");
 			VmService.deleteVm(strVmId); //add by frank yan.
 			return true;
 		}

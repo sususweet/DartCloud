@@ -3,6 +3,11 @@
 		   xmlns:s="library://ns.adobe.com/flex/spark" 
 		   xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:dg="dg.*" creationComplete="canvas1_creationCompleteHandler(event)">
 	
+	<fx:Metadata>
+		[Event(name="notToAllPublicToPublicEvent", type="view.FileCenter.DeleteFileEvent")]
+		[Event(name="notToAllPublicToPrivateEvent", type="view.FileCenter.DeleteFileEvent")]
+	</fx:Metadata>
+	
 	<fx:Script>
 		<![CDATA[
 			import dg.myadg.CheckBoxHeaderRenderer;
@@ -15,6 +20,7 @@
 			import mx.events.FlexEvent;
 			import mx.messaging.AbstractConsumer;
 			import mx.rpc.events.ResultEvent;
+			import mx.controls.Alert;
 			
 			internal var dcModelLocator:DCModelLocator = DCModelLocator.getInstance();
 			
@@ -90,7 +96,53 @@
 			protected function canvas1_creationCompleteHandler(event:FlexEvent):void
 			{
 				// TODO Auto-generated method stub
+				publicNotToAllDataGrid.addEventListener("notToAllPublicToPublicEvent", notToAllPublicToPublicHandler);
+				publicNotToAllDataGrid.addEventListener("notToAllPublicToPrivateEvent", notToAllPublicToPrivateHandler);
 				publicNotToAllFileInfoRO.getPublicFileList("public_not_to_all"); 
+			}
+			
+			/**将协同盘文件复制进公共盘，需要传入的参数为：文件名*/
+			protected function notToAllPublicToPublicHandler(evt:DeleteFileEvent):void
+			{
+				var index:int = publicNotToAllFileInfo.getItemIndex(evt._deleteFile);
+				var fileName:String = publicNotToAllFileInfo.getItemAt(index).file_Name;
+				notToAllPublicToPublicRO.notToAllPublicToPublic(fileName);
+			}
+			
+			/**将协同盘文件复制进当前业务盘，需要传入的参数为：
+			 * 文件名称， 业务ID，业务所在域名*/
+			protected function notToAllPublicToPrivateHandler(evt:DeleteFileEvent):void
+			{
+				var index:int = publicNotToAllFileInfo.getItemIndex(evt._deleteFile);
+				var fileName:String = publicNotToAllFileInfo.getItemAt(index).file_Name;
+				var zoneName:String = null;
+				if(dcModelLocator.curSelectedJob != null)
+				{
+					zoneName = dcModelLocator.curSelectedJob.strZoneName;
+				}
+				else
+				{
+					Alert.show("请先选择某个业务！");
+					return;
+				}
+				notToAllPublicToPrivateRO.notToAllPublicToPrivate(fileName, str, zoneName);
+				//Alert.show("当前所属域" + dcModelLocator.curSelectedJob.strZoneName);
+				//publicFileInfo.removeItemAt(index);
+				//deletePrivateFileRO.deletePrivateFile(name, str);
+			}
+			
+			protected function notToAllPublicToPublicRO_resultHandler(event:ResultEvent):void
+			{
+				// TODO Auto-generated method stub
+				var resultMessage:String = event.result as String;
+				Alert.show(resultMessage);
+			}
+			
+			protected function notToAllPublicToPrivateRO_resultHandler(event:ResultEvent):void
+			{
+				// TODO Auto-generated method stub
+				var resultMessage:String = event.result as String;
+				Alert.show(resultMessage);
 			}
 			
 		]]>
@@ -98,6 +150,8 @@
 	
 	<fx:Declarations>
 		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+		<mx:RemoteObject id="notToAllPublicToPublicRO" destination="DownlodDest" result="notToAllPublicToPublicRO_resultHandler(event)" />
+		<mx:RemoteObject id="notToAllPublicToPrivateRO" destination="DownlodDest" result="notToAllPublicToPrivateRO_resultHandler(event)" />
 		<mx:RemoteObject id="publicNotToAllFileInfoRO" destination="DownlodDest" result="publicFileInfoRO_resultHandler(event)" />
 		<mx:RemoteObject id="DownloadZipFileRO" destination="DownlodDest" result="DownloadZipFileRO_resultHandler(event)"/>
 		<fx:String id="str"/>
@@ -105,7 +159,7 @@
 	<mx:Label text="协同共享盘内容：" x="36" y="0" fontWeight="bold"/>
 	<mx:Button x="360" y="0" label="下载" click="button1_clickHandler(event)"/>
 	
-	<dg:AdvancedDataGrid x="0" y="60" id="publicNotToAllDataGrid" width="1125" height="400"
+	<dg:AdvancedDataGrid x="10" y="60" id="publicNotToAllDataGrid" width="1400" height="500"
 						 variableRowHeight="true" rowHeight="25" sortExpertMode="true"
 						 selectable="false"
 						 hasCheck="true" dataProvider="{publicNotToAllFileInfo}" sortableColumns="true"
@@ -119,37 +173,98 @@
 									   width="400" />
 			<mx:AdvancedDataGridColumn dataField="file_Size"
 									   headerText="文件大小"
-									   fontWeight="bold"
+									   fontWeight="normal"
 									   textAlign="center"
 									   width="100" />
 			<mx:AdvancedDataGridColumn dataField="file_Time"
 									   headerText="上传时间"
-									   fontWeight="bold"
+									   fontWeight="normal"
 									   textAlign="center"
 									   width="200" />
 			<mx:AdvancedDataGridColumn dataField="file_Owner"
 									   headerText="上传者"
-									   fontWeight="bold"
+									   fontWeight="normal"
 									   textAlign="center"
 									   width="100" />
 			<mx:AdvancedDataGridColumn dataField="file_Category"
 									   headerText="文件类别"
-									   fontWeight="bold"
+									   fontWeight="normal"
 									   textAlign="center"
 									   width="100" />
 			<mx:AdvancedDataGridColumn dataField="file_Description"
 									   headerText="文件描述"
-									   fontWeight="bold"
+									   fontWeight="normal"
 									   width="200" editable="false">
 				<mx:itemRenderer>
 					<fx:Component>
 						<mx:HBox horizontalAlign="center">
-							<mx:TextArea width="196" height="100"
+							<mx:TextArea width="100%" height="100"
 										 verticalScrollPolicy="auto"
 										 horizontalScrollPolicy="off"
 										 wordWrap="true"
 										 editable="false"
 										 text="{data.file_Description}" />
+						</mx:HBox>
+					</fx:Component>
+				</mx:itemRenderer>
+			</mx:AdvancedDataGridColumn>
+			
+			<mx:AdvancedDataGridColumn dataField="operation"
+									   headerText="操作栏"
+									   textAlign="center"
+									   width="200">
+				<mx:itemRenderer>
+					<fx:Component>
+						<mx:HBox horizontalAlign="center">
+							
+							<fx:Script>
+								<![CDATA[
+									import mx.controls.Alert;
+									import mx.events.CloseEvent;
+									import mx.events.FlexEvent;
+									
+									protected function notToAllPublicToPublic_clickHandler(event:MouseEvent):void
+									{
+										// TODO Auto-generated method stub
+										//Alert.yesLabel = "确定";
+										//Alert.noLabel = "取消";
+										//Alert.show('您确定要将该文件收藏至当前业务的私有盘中吗', '提示', 1 | 2, this, publicToPrivateHandler);
+										var evt:DeleteFileEvent = new DeleteFileEvent("notToAllPublicToPublicEvent", data);
+										dispatchEvent(evt);
+									}
+									
+									//protected function hbox1_creationCompleteHandler(event:FlexEvent):void
+									//{
+									// TODO Auto-generated method stub
+									//	Alert.show(test.);
+									//}
+									
+									//protected function hbox1_creationCompleteHandler(event:FlexEvent):void
+									//{
+									// TODO Auto-generated method stub
+									//	Alert.show(publicToPrivate.parent.toString());
+									//}
+									
+									
+									/**
+									 * 因为在这个内部类里面我无法得到左面的job列表是否选择了某个业务，所以，直接冒泡此事件
+									 * 至父级处理，这样的缺憾是不能动态改变收藏按钮的可否点击性质，用户体验不佳*/
+									protected function notToAllPublicToPrivate_clickHandler(event:MouseEvent):void
+									{
+										// TODO Auto-generated method stub
+										var evt:DeleteFileEvent = new DeleteFileEvent("notToAllPublicToPrivateEvent", data);
+										dispatchEvent(evt);
+									}
+									
+								]]>
+							</fx:Script>
+							
+							<mx:LinkButton id="notToAllPublicToPublic" label="转至公共盘"
+										   click="notToAllPublicToPublic_clickHandler(event)"/>
+							
+							<mx:LinkButton id="notToAllPublicToPrivate" label="收藏到业务盘"
+										   click="notToAllPublicToPrivate_clickHandler(event)"/>
+							
 						</mx:HBox>
 					</fx:Component>
 				</mx:itemRenderer>

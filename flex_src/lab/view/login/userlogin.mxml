@@ -41,11 +41,11 @@
 			
 			//在本地测试和外网的环境下，虽然都是向本地的HttpServlet发出请求！
 			//但配置是不同的，因为本地的端口号是8080，而250服务器上的端口号是80.
-			private var m_Request_Url:String = "http://dartcloud.zju.edu.cn/DartCloud/SessionClient";
-//			private var m_Request_Url:String = "http://localhost:8080/DartCloud/SessionClient";
+//			private var m_Request_Url:String = "http://dartcloud.zju.edu.cn/DartCloud/SessionClient";
+			private var m_Request_Url:String = "http://localhost:8080/DartCloud/SessionClient";
 			//默认的情况下是跳转到这个界面。
-			private var m_strLoginUrl:String = "http://dartcloud.zju.edu.cn/DartCloud/indexView.html";
-//			private var m_strLoginUrl:String = "http://localhost:8080/DartCloud/indexView.html";
+//			private var m_strLoginUrl:String = "http://dartcloud.zju.edu.cn/DartCloud/indexView.html";
+			private var m_strLoginUrl:String = "http://localhost:8080/DartCloud/indexView.html";
 			
 			private var m_strRegisterUrl:String = "http://zuinfo.zju.edu.cn/selfreg.do";
 			

@@ -5,6 +5,7 @@
 		//[Event(name="DelPrivateEvent",type="view.FileCenter.DeleteFileEvent")]
 		//[Event(name="ShaPrivateEvent",type="view.FileCenter.DeleteFileEvent")]
 	</mx:Metadata>
+	
 	<mx:Script>
 		<![CDATA[
 			//creationComplete="downloadView_creationCompleteHandler(event)"
@@ -159,8 +160,12 @@
 				{
 					dcModelLocator.curSelectedJob = null; //0表示没有选择业务
 				}
-				else if(selType == 1 || selType ==2)//选择业务或者虚拟机
+				else if(selType == 1 || selType == 2)//选择业务或虚拟机
 				{
+					if(selType == 2)
+					{
+						selectedIndex /= 1000;
+					}
 					tmpJob = dcModelLocator.userJobInfoAC[selectedIndex] as Job;
 					//dcModelLocator.selectedVmInfoAC = UtilFunc.getOnJobVmInfo(tmpJob);
 					dcModelLocator.curSelectedJob = tmpJob;
@@ -291,6 +296,15 @@
 				}
 				privateDataGrid.columns=privateColumns;
 			} */
+			
+			protected function computingResTree_creationCompleteHandler(event:FlexEvent):void
+			{
+				// TODO Auto-generated method stub
+				//computingResTree.validateNow();
+				computingResTree.expandItem(dcModelLocator.JobInfoXMLList.getItemAt(0),true, true);
+				//computingResTree.expandChildrenOf(dcModelLocator.JobInfoXMLList.getItemAt(0),true);
+			}
+			
 		]]>
 	</mx:Script>
 	
@@ -305,11 +319,11 @@
 		</mx:VBox>
 		<mx:Tree id="computingResTree" width="100%" height="100%" 
 				 labelField="@label"  showRoot="true" dataProvider="{dcModelLocator.JobInfoXMLList}"
-				 change="computingResTree_changeHandler(event)" />
+				 change="computingResTree_changeHandler(event)" 
+				 creationComplete="computingResTree_creationCompleteHandler(event)"/>
 	</mx:VBox>
 	
 	<mx:Style>
-		
 		/* .publicDisk
 		{
 			left:50px;
@@ -322,7 +336,6 @@
 			right:50px;
 			top:50px;
 		} */
-		
 	</mx:Style>
 	
 	<!--<mx:Canvas width="100%" height="100%" borderStyle="solid" minWidth="1200">-->

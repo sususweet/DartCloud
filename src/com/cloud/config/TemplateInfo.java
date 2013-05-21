@@ -89,11 +89,15 @@ public class TemplateInfo
 			str_template = str_template.replaceAll("<vm_memory_size>", String.valueOf(job.getiMemSize()));
 			str_template = str_template.replaceAll("<vm_name>", String.valueOf(iImageId));
 			str_template = str_template.replaceAll("<image_id>", String.valueOf(iImageId));
+//			System.out.println("iImageId: " + iImageId);
+//			System.out.println("iCpuNum: "+job.getiCpuNum()+", iMemsize: " + job.getiMemSize()+", iJobId: " + job.getiJobId());
+//			System.out.println("vmPass: " + job.getstrVmPass());
 			str_template = str_template.replaceAll("<pass>", job.getstrVmPass());
 			str_template = str_template.replaceAll("<jobid>", String.valueOf(job.getiJobId()));
 			str_template = str_template.replaceAll("<nfsserver>", nfsServer);
 		} catch (Exception e) {
-			logWriter.log("Exception in initTemplate: " + e);
+			logWriter.log("Exception in TemplateInfo.java/initTemplate: " + e.getStackTrace());
+			e.printStackTrace();
 			return false;
 		}
 		return true;

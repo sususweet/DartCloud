@@ -2,6 +2,7 @@ package com.cloud.dao;
 
 
 import com.cloud.entities.*;
+import com.cloud.utilFun.LogWriter;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -13,8 +14,12 @@ import java.sql.Statement;
  * @version 1.0, 2012-3-14
  */
 public class VmService {
+
 	
-	/*
+	private static LogWriter logWriter = LogWriter.getLogWriter();
+
+	
+	/**
 	 * 将一个VM对象插入到数据库中
 	 * @param oneVmInfo 待插入的虚拟机对象
 	 * @return 如果插入成功，则返回TRUE，否则返回FALSE
@@ -50,12 +55,12 @@ public class VmService {
 			Statement statement = connection.createStatement();
 			result = statement.executeUpdate(sql);
 		}catch(SQLException e){
-			e.printStackTrace();
+			logWriter.log(e);
 		}finally{
 			try{
 				connection.close();
 			}catch(Exception e){
-				e.printStackTrace();
+				logWriter.log(e);
 			}
 		}
 		if(result != 0){ //执行成功
@@ -71,7 +76,7 @@ public class VmService {
 		ResultSet rs = null; //定义变量存放执行结果
 		
 		//********************调试-打印获取镜像的sql语句**********************//
-		System.out.println(sql);
+		logWriter.log(sql);
 		
 		try{
 			connection = MySQLConnection.getInstance().getConnection();
@@ -79,20 +84,20 @@ public class VmService {
 			Statement statement = connection.createStatement();
 			rs = statement.executeQuery(sql);
 			if(rs == null){
-				System.out.println("没有镜像了！");
+				logWriter.log("没有镜像了！");
 			}
 			else{
 				rs.next();
 				imageId = rs.getInt("image_id");
 			}
 		}catch(SQLException e){
-			System.out.println("虚拟机"+ strVmId +"的镜像数据获取失败！");
-			e.printStackTrace();
+			logWriter.log("虚拟机"+ strVmId +"的镜像数据获取失败！");
+			logWriter.log(e);
 		}finally{
 			try{
 				connection.close();
 			}catch(Exception e){
-				e.printStackTrace();
+				logWriter.log(e);
 			}
 		}
 		return imageId;
@@ -116,7 +121,7 @@ public class VmService {
 			Statement statement = connection.createStatement();
 			rs = statement.executeQuery(sql);
 			if(rs == null){
-				System.out.println("没有获得"+strVmId+"号虚拟机。");
+				logWriter.log("没有获得"+strVmId+"号虚拟机。");
 			}
 			else{
 				rs.next();
@@ -125,12 +130,12 @@ public class VmService {
 						rs.getString("vm_ip"),rs.getInt("net_status"));
 			}
 		}catch(SQLException e){
-			e.printStackTrace();
+			logWriter.log(e);
 		}finally{
 			try{
 				connection.close();
 			}catch(Exception e){
-				e.printStackTrace();
+				logWriter.log(e);
 			}
 		}
 		return vm;
@@ -158,15 +163,15 @@ public class VmService {
 				iJobId = rs.getInt("vm_job_id");
 			}
 			else{
-				System.out.println("没有获得id为"+strVmId+"的虚拟机iJobId。");
+				logWriter.log("没有获得id为"+strVmId+"的虚拟机iJobId。");
 			}
 		}catch(SQLException e){
-			e.printStackTrace();
+			logWriter.log(e);
 		}finally{
 			try{
 				connection.close();
 			}catch(Exception e){
-				e.printStackTrace();
+				logWriter.log(e);
 			}
 		}
 		return iJobId;
@@ -181,7 +186,7 @@ public class VmService {
 		String sql = "DELETE FROM vm_info WHERE vm_id = '" + strVmId + "';";
 		if(!excuteUpdateSql(sql))
 		{
-			System.out.println("删除虚拟机失败！");
+			logWriter.log("在数据库中删除虚拟机的相关记录时发生异常！");
 			return false;
 		}
 		return true;
@@ -230,7 +235,7 @@ public class VmService {
 		sql = sql + " where vm_id = '" + vmId +"'";
 		
 		if(!excuteUpdateSql(sql)){
-			System.out.println("更新虚拟机配置失败！");
+			logWriter.log("更新虚拟机配置失败！");
 			return false;
 		}
 		
@@ -254,13 +259,15 @@ public class VmService {
 			//创建数据库对象
 			Statement statement = connection.createStatement();
 			result = statement.executeUpdate(sql);
+			logWriter.log("Excute sql:" + sql);
+			logWriter.log("result: " + result);
 		}catch(SQLException e){
-			e.printStackTrace();
+			logWriter.log(e);
 		}finally{
 			try{
 				connection.close();
 			}catch(Exception e){
-				e.printStackTrace();
+				logWriter.log(e);
 			}
 		}
 		if(result != 0){ //执行成功
@@ -269,11 +276,44 @@ public class VmService {
 		return isSucc;
 	}
 	
+	/**
+	 * 获取用户当前所申请的虚拟机总数；每个用户都有所能申请的虚拟机的最多个数。
+	 * @param strVmId
+	 * @return
+	 */
+	public static int getUserApplyVMNum(int iUserId)
+	{
+		int iApplyVmNum = -1; //用户目前所申请的虚拟机总数
+		String strSql = "select count(*) from vm_info where vm_job_id IN(select job_id from job_info " +
+				"where job_user_id= '" + iUserId + "');";
+		Connection connection = null; //定义连接对象
+		ResultSet rs = null; //定义变量存放执行结果
+		logWriter.log("excute sql: " + strSql);
+		try{
+			connection = MySQLConnection.getInstance().getConnection();
+			//创建数据库对象
+			Statement statement = connection.createStatement();
+			rs = statement.executeQuery(strSql);
+			if(rs != null){
+				rs.next();
+				iApplyVmNum = rs.getInt("count(*)");
+			}
+		}catch(SQLException e){
+			logWriter.log("获取用户"+ iUserId +"所申请的虚拟机数目出错！");
+			logWriter.log(e);
+		}finally{
+			try{
+				connection.close();
+			}catch(Exception e){
+				logWriter.log(e);
+			}
+		}
+		return iApplyVmNum;
+	}
+	
+	
 	
 	public static void main(String[] args){
-		int i = VmService.getImageId("33");
-		System.out.println(i);
-		VM vm = getVmById("33");
-		System.out.println(vm.getstrVmId());
+		System.out.println(VmService.getUserApplyVMNum(1044));
 	}
 }

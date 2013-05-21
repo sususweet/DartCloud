@@ -123,7 +123,7 @@
 				
 				job.iCpuNum = int(iCpuNum.value);
 				job.iMemSize = int(iMemSize.value);
-//				job.iStorageSize = int(iStorageSize.value);
+				//job.iStorageSize = int(iStorageSize.value);
 				job.iStorageSize = 0; //这个选项暂时去掉，所以默认将其设为0.
 				job.iVmNum = int(ns_vmNum.value);
 				

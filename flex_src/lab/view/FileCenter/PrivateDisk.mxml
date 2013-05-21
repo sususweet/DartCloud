@@ -4,6 +4,8 @@
 		   xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:dg="dg.*" creationComplete="canvas1_creationCompleteHandler(event)">
 	<fx:Metadata>
 		[Event(name="DelPrivateEvent",type="view.FileCenter.DeleteFileEvent")]
+		[Event(name="privateToNotToAllPublicEvent", type="view.FileCenter.DeleteFileEvent")]
+		[Event(name="privateToPublicEvent", type="view.FileCenter.DeleteFileEvent")]
 		//[Event(name="ShaPrivateEvent",type="view.FileCenter.DeleteFileEvent")]
 	</fx:Metadata>
 	
@@ -94,6 +96,8 @@
 			{
 				// TODO Auto-generated method stub
 				//privateFileInfoRO.getPrivateFileList(downloadFileView.);
+				privateDataGrid.addEventListener("privateToPublicEvent", privateToPublicHandler);
+				privateDataGrid.addEventListener("privateToNotToAllPublicEvent", privateToNotToAllPublicHandler);
 				privateDataGrid.addEventListener("DelPrivateEvent", deletePrivateFileHandler);
 				str = null;
 				if(dcModelLocator.curSelectedJob != null)
@@ -103,6 +107,62 @@
 				}
 				privateFileInfoRO.getPrivateFileList(str); //私有
 				
+			}
+			
+			/**私有文件复制进公共盘中，传入参数为：
+			 * 文件名称，业务ID，业务所在域名*/
+			protected function privateToPublicHandler(evt:DeleteFileEvent):void
+			{
+				var index:int = privateFileInfo.getItemIndex(evt._deleteFile);
+				var fileName:String = privateFileInfo.getItemAt(index).fileName;
+				var fileSize:String = privateFileInfo.getItemAt(index).fileSize;
+				var fileOwner:String = dcModelLocator.m_user.strUsername;
+				var zoneName:String = null;
+				if(dcModelLocator.curSelectedJob != null)
+				{
+					zoneName = dcModelLocator.curSelectedJob.strZoneName;
+				}
+				else
+				{
+					Alert.show("请先选择某个业务！");
+					return;
+				}
+				privateToPublicRO.privateToPublic(fileName, fileSize, fileOwner, str, zoneName);
+			}
+			
+			/**将私有文件复制进协同盘中，传入参数为：
+			 * 文件名称， 业务ID，业务所在域名*/
+			protected function privateToNotToAllPublicHandler(evt:DeleteFileEvent):void
+			{		
+				var index:int = privateFileInfo.getItemIndex(evt._deleteFile);
+				var fileName:String = privateFileInfo.getItemAt(index).fileName;
+				var fileSize:String = privateFileInfo.getItemAt(index).fileSize;
+				var fileOwner:String = dcModelLocator.m_user.strUsername;
+				var zoneName:String = null;
+				if(dcModelLocator.curSelectedJob != null)
+				{
+					zoneName = dcModelLocator.curSelectedJob.strZoneName;
+				}
+				else
+				{
+					Alert.show("请先选择某个业务！");
+					return;
+				}
+				privateToNotToAllPublicRO.privateToNotToAllPublic(fileName, fileSize, fileOwner, str, zoneName);
+			}
+			
+			protected function privateToNotToAllPublicRO_resultHandler(event:ResultEvent):void
+			{
+				// TODO Auto-generated method stub
+				var resultMessage:String = event.result as String;
+				Alert.show(resultMessage);
+			}
+	
+			protected function privateToPublicRO_resultHandler(event:ResultEvent):void
+			{
+				// TODO Auto-generated method stub
+				var resultMessage:String = event.result as String;
+				Alert.show(resultMessage);
 			}
 			
 			protected function deletePrivateFileHandler(evt:DeleteFileEvent):void//删除文件操作,要删除列表，要删除复选框的复选结果[这个由于表格组件的完善，已不需要]，要删除本地文件
@@ -136,13 +196,15 @@
 		<mx:RemoteObject id="privateFileInfoRO" destination="DownlodDest" result="privateFileInfoRO_resultHandler(event)"/>
 		<mx:RemoteObject id="DownloadZipFileRO" destination="DownlodDest" result="DownloadZipFileRO_resultHandler(event)" />
 		<mx:RemoteObject id="deletePrivateFileRO" destination="DownlodDest" result="deletePrivateFileRO_resultHandler(event)"/>
+		<mx:RemoteObject id="privateToPublicRO" destination="DownlodDest" result="privateToPublicRO_resultHandler(event)" />
+		<mx:RemoteObject id="privateToNotToAllPublicRO" destination="DownlodDest" result="privateToNotToAllPublicRO_resultHandler(event)" />
 		<fx:String id="str" />
 	</fx:Declarations>
 	<mx:Label text="业务盘内容" x="36" y="0" fontWeight="bold"/>
 	<mx:Button x="360" y="0" label="下载" click="button1_clickHandler(event)"/>
 	
-	<dg:AdvancedDataGrid x="0" y="60" id="privateDataGrid" width="570"
-						 height="410" rowHeight="25" sortExpertMode="true"
+	<dg:AdvancedDataGrid x="10" y="60" id="privateDataGrid" width="800"
+						 height="500" rowHeight="25" sortExpertMode="true"
 						 hasCheck="true" dataProvider="{privateFileInfo}"
 						 sortableColumns="true" selectable="false"
 						 initialize="privateDataGrid_initializeHandler(event)"
@@ -156,12 +218,12 @@
 			<mx:AdvancedDataGridColumn dataField="fileSize"
 									   headerText="文件大小"
 									   textAlign="center"
-									   fontWeight="bold"
+									   fontWeight="normal"
 									   width="100" />
 			<mx:AdvancedDataGridColumn dataField="operation"
 									   headerText="操作栏"
 									   textAlign="center"
-									   width="120">
+									   width="200">
 				<mx:itemRenderer>
 					<fx:Component>
 						<mx:HBox horizontalAlign="center">
@@ -200,15 +262,28 @@
 										
 									} */
 									
+									protected function privateToPublic_clickHandler(event:MouseEvent):void
+									{
+										// TODO Auto-generated method stub
+										var evt:DeleteFileEvent = new DeleteFileEvent("privateToPublicEvent", data);
+										dispatchEvent(evt);
+									}
+									
+									protected function privateToNotToAllPublic_clickHandler(event:MouseEvent):void
+									{
+										var evt:DeleteFileEvent = new DeleteFileEvent("privateToNotToAllPublicEvent", data);
+										dispatchEvent(evt);
+									}
+									
 								]]>
 							</fx:Script>
 							
 							<mx:LinkButton id="deletePrivateFile" label="删除"
 										   click="deletePrivateFile_clickHandler(event)"/>
-							<!--<mx:LinkButton id="publicPrivateFile" label="公开"
-										   click="sharePrivateFile_clickHandler(event)"/>
-							<mx:LinkButton id="publicNotToAllPrivateFile" label="半公开"
-										   click="publicNotToAllPrivateFile_clickHandler(event)"/>-->
+							<mx:LinkButton id="privateToPublic" label="转至公共盘"
+										   click="privateToPublic_clickHandler(event)"/>
+							<mx:LinkButton id="privateToNotToAllPublic" label="转至协同盘"
+										   click="privateToNotToAllPublic_clickHandler(event)"/>
 							</mx:HBox>
 						</fx:Component>
 					</mx:itemRenderer>

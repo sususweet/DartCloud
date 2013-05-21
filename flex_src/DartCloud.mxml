@@ -4,7 +4,6 @@
 			    xmlns:mx="library://ns.adobe.com/flex/mx" layout="vertical" verticalGap="0" xmlns:control="lab.control.*"
 				xmlns:view="lab.view.*" 
 				paddingTop="0" paddingLeft="0" paddingRight="0" paddingBottom="0" horizontalAlign="left"
-	
 				minWidth="900" minHeight="700" >
 
 	<fx:Style>

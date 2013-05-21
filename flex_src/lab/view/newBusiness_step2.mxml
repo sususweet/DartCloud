@@ -54,39 +54,40 @@
 //				CheckImageEnoughRO.checkImage(job.iVmNum, job.iOSType);
 				sure.enabled = false;
 				sure.label = "请稍等";
-				var createOneJobEvent:CreateOneJobEvent = new CreateOneJobEvent(job);
-				createOneJobEvent.dispatch();
-				//清除当前的弹出窗口。
-				PopUpManager.removePopUp(this);
-				Alert.show("正在向数据中心申请资源，请稍等...");
+				
+				isAllowUserAppayMoreVmsRO.isAllowUserApplyMoreVMs(job.iUserId,job.iVmNum);
+				
+				
+//				var createOneJobEvent:CreateOneJobEvent = new CreateOneJobEvent(job);
+//				createOneJobEvent.dispatch();
+//				//清除当前的弹出窗口。
+//				PopUpManager.removePopUp(this);
+//				Alert.show("正在向数据中心申请资源，请稍等...");
 			}
+
+			protected function isAllowUserAppayMoreVmsRO_resultHandler(event:ResultEvent):void
+			{
+				var bRes:Boolean = event.result as Boolean;
+				if(true == bRes)
+				{
+					var createOneJobEvent:CreateOneJobEvent = new CreateOneJobEvent(job);
+					createOneJobEvent.dispatch();
+					//清除当前的弹出窗口。
+					PopUpManager.removePopUp(this);
+					Alert.show("正在向数据中心申请资源，请稍等...","提示");
+				}
+				else
+				{
+					Alert.show("当前您最多只能申请10台虚拟机，如果需要更多的虚拟机，请联系管理员！", "错误");
+				}
+			}
+
 			
-			
-//			protected function CheckImageEnoughRO_resultHandler(event:ResultEvent):void
-//			{
-//				var isEnough:Boolean = event.result;
-//				if(isEnough == true)
-//				{
-//					var createOneJobEvent:CreateOneJobEvent = new CreateOneJobEvent(job);
-//					createOneJobEvent.dispatch();
-//					
-//					//清除当前的弹出窗口。
-//					PopUpManager.removePopUp(this);
-//				}
-//				else
-//				{
-//					Alert.show("虚拟机镜像不足，请等待！" + event.result.toString());
-//				}
-//				
-//			}
-//			
-//			
-//			protected function CheckImageEnoughRO_faultHandler(event:FaultEvent):void
-//			{
-//				Alert.show("新建业务出现异常！" + event.toString());
-//			}
-			
-			
+			protected function isAllowUserAppayMoreVmsRO_faultHandler(event:FaultEvent):void
+			{
+				Alert.show("申请虚拟机出现异常，请重试！");
+			}
+
 		]]>
 	</mx:Script>
 	<!--endpoint="http://localhost:8080/DartCloud/messagebroker/amf" 	
@@ -94,7 +95,8 @@
 	<mx:RemoteObject id="CheckImageEnoughRO" destination="ImageServiceDest" result="CheckImageEnoughRO_resultHandler(event)" 
 	fault="CheckImageEnoughRO_faultHandler(event)" />
 	-->
-	
+	<mx:RemoteObject id="isAllowUserAppayMoreVmsRO" destination="UserServiceDest"
+					 result="isAllowUserAppayMoreVmsRO_resultHandler(event)" fault="isAllowUserAppayMoreVmsRO_faultHandler(event)" />
 	
 	
 	<mx:Form id="secondStep" width="100%" paddingLeft="50" paddingTop="30">

@@ -261,21 +261,55 @@ public class UserService {
 		return isSucc;
 	}
 	
+	
+	/**
+	 * 判断是否允许用户再次申请iCurApplyNum个虚拟机；每个用户都有申请虚拟机个数的上限，目前是10个。
+	 * @param iUserId	用户id
+	 * @param iCurApplyNum	本次申请的虚拟机
+	 * @return
+	 * @throws Exception
+	 */
+	public boolean isAllowUserApplyMoreVMs(int iUserId, int iCurApplyNum) throws Exception
+	{
+		boolean bRet = false;
+		Connection connection = null; //定义连接对象
+		try{
+			String strSql = "SELECT * FROM userinfo WHERE user_id = '" + iUserId + "' ;";//查询语句
+			connection = MySQLConnection.getInstance().getConnection();
+			//创建数据库对象
+			Statement statement = connection.createStatement();
+			ResultSet rs  = statement.executeQuery(strSql); //获取查询结果			
+			if(rs.next())
+			{
+				int iMaxVmNum = rs.getInt("vm_apply_max_num");
+				int iCurTotalVmNum = VmService.getUserApplyVMNum(iUserId);
+				if(iCurTotalVmNum+iCurApplyNum <= iMaxVmNum) //已经申请的数目+本次申请的数目 <= 最大允许申请的数目
+					bRet = true;
+			}
+		}catch(SQLException e){
+			throw new Exception(e);
+		}finally{
+			//finally块中的代码总是执行的。
+			try{
+				//关闭数据库，如果已打开连接。执行完毕后要关闭，释放资源
+				connection.close();
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+		}
+		return bRet;
+	}
+	
+	
 	public static void main(String args[]) throws Exception 
 	{
-		User user = new User();
-		/*
-		user.setStrZjuSsoUid("21121189");
-		user.setStrUsername("frank");
-		user.setStrUserEmail("");
-		user.setiUserRole(0);
-		user.setiAccountBalance(0);
-		*/
+//		User user = new User();
 		UserService us = new UserService();
-		user = us.getUserInfo(1044);
-		logWriter.log("Result: strZjuSsoUid=" + user.getStrUserZjuSsoUid()
-				+", Email="+user.getStrUserEmail() + ", strUserName=" + user.getStrUsername()
-				+",balance="+user.getiAccountBalance());
+//		user = us.getUserInfo(1044);
+//		logWriter.log("Result: strZjuSsoUid=" + user.getStrUserZjuSsoUid()
+//				+", Email="+user.getStrUserEmail() + ", strUserName=" + user.getStrUsername()
+//				+",balance="+user.getiAccountBalance());
+		System.out.println("res: " + us.isAllowUserApplyMoreVMs(1044,4));
 	}
 	
 }

@@ -141,10 +141,10 @@ public class LogWriter {
 				fin.close();
 				return pro.getProperty(LOGFILE_TAG_NAME);
 			} else {
-				System.err.println("无法打开属性配置文件: log.properties");
+				System.out.println("无法打开属性配置文件: log.properties");
 			}
 		} catch (IOException ex) {
-			System.err.println("无法打开属性配置文件: log.properties");
+			System.out.println("无法打开属性配置文件: log.properties");
 		}
 		return null;
 	}

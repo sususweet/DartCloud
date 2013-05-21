@@ -26,5 +26,10 @@
                 <data>5</data>
                 <ip>159.226.19.6</ip>
         </zone>
+        <zone>
+                <label>哈工大</label>
+                <data>6</data>
+                <ip>192.168.100.250</ip>
+        </zone>
 
 </zoneconfig>

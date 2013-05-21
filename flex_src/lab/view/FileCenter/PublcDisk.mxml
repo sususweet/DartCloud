@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <mx:Canvas xmlns:fx="http://ns.adobe.com/mxml/2009" 
 		   xmlns:s="library://ns.adobe.com/flex/spark" 
-		   xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:dg="dg.*" creationComplete="canvas1_creationCompleteHandler(event)">
+		   xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:dg="dg.*" creationComplete="canvas1_creationCompleteHandler(event)" xmlns:myadg="dg.myadg.*">
+	
+	<fx:Metadata>
+		[Event(name="publicToPrivateEvent",type="view.FileCenter.DeleteFileEvent")]
+		[Event(name="publicToNotToAllPublicEvent", type="view.FileCenter.DeleteFileEvent")]
+	</fx:Metadata>
 	
 	<fx:Script>
 		<![CDATA[
@@ -12,6 +17,7 @@
 			import lab.model.DCModelLocator;
 			
 			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
 			import mx.events.FlexEvent;
 			import mx.messaging.AbstractConsumer;
 			import mx.rpc.events.ResultEvent;
@@ -88,10 +94,58 @@
 			
 			
 			
+			
 			protected function canvas1_creationCompleteHandler(event:FlexEvent):void
 			{
 				// TODO Auto-generated method stub
+				publicDataGrid.addEventListener("publicToPrivateEvent", publicToPrivateHandler);
+				publicDataGrid.addEventListener("publicToNotToAllPublicEvent", publicToNotToAllPublicHandler);
 				publicFileInfoRO.getPublicFileList("public_to_all"); 
+			}
+			/**将公共盘文件复制到协同共享盘中，原公共盘的文件依然保存，不删除
+			 * 传入的方法参数只需要包含：文件名称*/
+			protected function publicToNotToAllPublicHandler(evt:DeleteFileEvent):void
+			{
+				var index:int = publicFileInfo.getItemIndex(evt._deleteFile);
+				var fileName:String = publicFileInfo.getItemAt(index).file_Name;
+				publicToNotToAllPublicRO.publicToNotToAllPublic(fileName);
+			}
+			
+			/**
+			 * 将公共盘文件移动至当前业务下的私有盘中，原公共盘的文件依然保存，不删除
+			 * 传入的方法参数应包含: 文件名称，当前的业务ID，当前的业务所属域*/
+			protected function publicToPrivateHandler(evt:DeleteFileEvent):void
+			{
+				var index:int = publicFileInfo.getItemIndex(evt._deleteFile);
+				var fileName:String = publicFileInfo.getItemAt(index).file_Name;
+				var zoneName:String = null;
+				if(dcModelLocator.curSelectedJob != null)
+				{
+					zoneName = dcModelLocator.curSelectedJob.strZoneName;
+				}
+				else
+				{
+					Alert.show("请先选择某个业务！");
+					return;
+				}
+				publicToPrivateRO.publicToPrivate(fileName, str, zoneName);
+				//Alert.show("当前所属域" + dcModelLocator.curSelectedJob.strZoneName);
+				//publicFileInfo.removeItemAt(index);
+				//deletePrivateFileRO.deletePrivateFile(name, str);
+			}
+			
+			protected function publicToPrivateRO_resultHandler(event:ResultEvent):void
+			{
+				// TODO Auto-generated method stub
+			 	var resultMessage:String = event.result as String;
+				Alert.show(resultMessage);
+			}
+			
+			protected function publicToNotToAllPublicRO_resultHandler(event:ResultEvent):void
+			{
+				// TODO Auto-generated method stub
+				var resultMessage:String = event.result as String;
+				Alert.show(resultMessage);
 			}
 			
 		]]>
@@ -99,6 +153,8 @@
 	
 	<fx:Declarations>
 		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+		<mx:RemoteObject id="publicToNotToAllPublicRO" destination="DownlodDest" result="publicToNotToAllPublicRO_resultHandler(event)" />
+		<mx:RemoteObject id="publicToPrivateRO" destination="DownlodDest" result="publicToPrivateRO_resultHandler(event)"/>
 		<mx:RemoteObject id="publicFileInfoRO" destination="DownlodDest" result="publicFileInfoRO_resultHandler(event)" />
 		<mx:RemoteObject id="DownloadZipFileRO" destination="DownlodDest" result="DownloadZipFileRO_resultHandler(event)" />
 		<fx:String id="str"/>
@@ -106,13 +162,14 @@
 	<mx:Label text="公共盘内容：" x="36" y="0" fontWeight="bold"/>
 	<mx:Button x="360" y="0" label="下载" click="button1_clickHandler(event)"/>
 	
-	<dg:AdvancedDataGrid x="0" y="60" id="publicDataGrid" width="1125" height="400"
+	<dg:AdvancedDataGrid x="10" y="60" id="publicDataGrid" width="1400" height="500"
 						 variableRowHeight="true" rowHeight="25" sortExpertMode="true"
 						 selectable="false"
 						 hasCheck="true" dataProvider="{publicFileInfo}" sortableColumns="true"
 						 initialize="publicDataGrid_initializeHandler(event)"
 						 creationComplete="publicDataGrid_creationCompleteHandler(event)">
 		<dg:columns>
+		
 			<mx:AdvancedDataGridColumn dataField="file_Name"
 									   headerText="文件名称"
 									   fontWeight="bold"
@@ -120,32 +177,32 @@
 									   width="400" />
 			<mx:AdvancedDataGridColumn dataField="file_Size"
 									   headerText="文件大小"
-									   fontWeight="bold"
+									   fontWeight="normal"
 									   textAlign="center"
 									   width="100" />
 			<mx:AdvancedDataGridColumn dataField="file_Time"
 									   headerText="上传时间"
-									   fontWeight="bold"
+									   fontWeight="normal"
 									   textAlign="center"
 									   width="200" />
 			<mx:AdvancedDataGridColumn dataField="file_Owner"
 									   headerText="上传者"
-									   fontWeight="bold"
+									   fontWeight="normal"
 									   textAlign="center"
 									   width="100" />
 			<mx:AdvancedDataGridColumn dataField="file_Category"
 									   headerText="文件类别"
-									   fontWeight="bold"
+									   fontWeight="normal"
 									   textAlign="center"
 									   width="100" />
 			<mx:AdvancedDataGridColumn dataField="file_Description"
 									   headerText="文件描述"
-									   fontWeight="bold"
+									   fontWeight="normal"
 									   width="200" editable="false">
 				<mx:itemRenderer>
 					<fx:Component>
 						<mx:HBox horizontalAlign="center">
-							<mx:TextArea width="196" height="100"
+							<mx:TextArea width="100%" height="100"
 										 verticalScrollPolicy="auto"
 										 horizontalScrollPolicy="off"
 										 wordWrap="true"
@@ -155,6 +212,76 @@
 						</fx:Component>
 					</mx:itemRenderer>
 				</mx:AdvancedDataGridColumn>
+			
+			<mx:AdvancedDataGridColumn dataField="operation"
+									   headerText="操作栏"
+									   textAlign="center"
+									   width="200">
+				<mx:itemRenderer>
+					<fx:Component>
+						<mx:HBox horizontalAlign="center">
+							
+							<fx:Script>
+								<![CDATA[
+									import mx.controls.Alert;
+									import mx.events.CloseEvent;
+									import mx.events.FlexEvent;
+									
+//									public function publicToPrivateHandler(event:CloseEvent):void
+//									{
+//										if(event.detail == Alert.YES)
+//										{
+//											var evt:DeleteFileEvent = new DeleteFileEvent("publicToPrivateEvent", data);
+//											dispatchEvent(evt);
+//										}
+//									} 
+									/**
+									 * 因为在这个内部类里面我无法得到左面的job列表是否选择了某个业务，所以，直接冒泡此事件
+									 * 至父级处理，这样的缺憾是不能动态改变收藏按钮的可否点击性质，用户体验不佳*/
+									protected function publicToPrivate_clickHandler(event:MouseEvent):void
+									{
+										// TODO Auto-generated method stub
+										//Alert.yesLabel = "确定";
+										//Alert.noLabel = "取消";
+										//Alert.show('您确定要将该文件收藏至当前业务的私有盘中吗', '提示', 1 | 2, this, publicToPrivateHandler);
+										var evt:DeleteFileEvent = new DeleteFileEvent("publicToPrivateEvent", data);
+										dispatchEvent(evt);
+									}
+									
+									protected function publicToNotToAllPublic_clickHandler(event:MouseEvent):void
+									{
+										// TODO Auto-generated method stub
+										var evt:DeleteFileEvent = new DeleteFileEvent("publicToNotToAllPublicEvent", data);
+										dispatchEvent(evt);
+									}
+									
+									//protected function hbox1_creationCompleteHandler(event:FlexEvent):void
+									//{
+										// TODO Auto-generated method stub
+									//	Alert.show(test.);
+									//}
+									
+									//protected function hbox1_creationCompleteHandler(event:FlexEvent):void
+									//{
+										// TODO Auto-generated method stub
+									//	Alert.show(publicToPrivate.parent.toString());
+									//}
+									
+									
+									
+								]]>
+							</fx:Script>
+							
+							<mx:LinkButton id="publicToNotToAllPublic" label="收藏到协同盘"
+										   click="publicToNotToAllPublic_clickHandler(event)" />
+							
+							<mx:LinkButton id="publicToPrivate" label="收藏到业务盘"
+										   click="publicToPrivate_clickHandler(event)"/>
+							
+						</mx:HBox>
+					</fx:Component>
+				</mx:itemRenderer>
+			</mx:AdvancedDataGridColumn>
 			</dg:columns>
 			
 	</dg:AdvancedDataGrid>
